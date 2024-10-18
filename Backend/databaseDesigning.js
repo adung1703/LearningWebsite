@@ -70,7 +70,7 @@ lesson = {
     url: String,
     create_at: Date,
     update_at: Date,
-    comments: [userId, content, create_at]
+    comments: [userId, content, create_at, reply[userId, content, create_at]]
 } //lesson 1, lesson 2, lesson 3, lesson 4, lesson 5, lesson 6, lesson 7, lesson 8, lesson 9, lesson 10
 
 assignment = {
