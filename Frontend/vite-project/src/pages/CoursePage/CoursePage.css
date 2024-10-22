@@ -1,0 +1,100 @@
+.CoursePage {
+    padding-top: 80px;
+    width: 100%;
+    min-height: 100vh;
+    background: url('../../assets/background.jpg') no-repeat center center fixed;
+    background-size: cover;
+    overflow: hidden;
+}
+
+.course-content {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.course-header {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.progress-bar {
+    width: 100%;
+    max-width: 600px;
+    height: 20px;
+    background-color: #e0e0e0;
+    border-radius: 10px;
+    overflow: hidden;
+    margin: 10px auto;
+}
+
+.progress-bar-fill {
+    height: 100%;
+    background-color: #4caf50;
+    border-radius: 10px 0 0 10px;
+}
+
+.chapter-section {
+    margin-bottom: 30px;
+    width: 100%;
+    max-width: 600px; /* Align chapter name and lesson items */
+}
+
+.chapter-section h2 {
+    margin-bottom: 10px;
+    text-align: left; /* Align chapter name to the start */
+}
+
+.lessons-list {
+    list-style-type: none;
+    padding-left: 0;
+    text-align: center; /* Center-align the lesson items */
+}
+
+.lesson-item {
+    display: flex;
+    align-items: center; /* Center items vertically */
+    padding: 10px;
+    margin-bottom: 5px;
+    background-color: #f0f0f0;
+    border-radius: 5px;
+    box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
+    max-width: 500px;
+    margin: 0 auto 5px auto;
+}
+
+.lesson-item.completed {
+    background-color: #e0ffe0; /* Background color for completed lessons */
+}
+
+.lesson-item.uncompleted {
+    background-color: #d3d3d3; /* Background color for uncompleted lessons */
+}
+
+.lesson-icon {
+    margin-right: 10px; /* Space between icon and lesson name */
+    font-size: 18px;
+}
+
+.lesson-name {
+    flex-grow: 1; /* Allows the name to take up available space */
+    text-align: left; /* Aligns text to the left */
+}
+
+.check-circle {
+    font-size: 20px; /* Size of the checkmark */
+    color: #4caf50; /* Color of the checkmark */
+    min-width: 24px; /* Set a fixed width for the checkmark */
+    visibility: hidden; /* Initially hidden */
+    margin-left: auto; /* Push checkmark to the right */
+}
+
+.lesson-item.completed .check-circle {
+    visibility: visible; /* Show checkmark when completed */
+}
+
+.lesson-item:hover {
+    background-color: #e0e0e0; /* Hover effect */
+    cursor: pointer; /* Changes cursor on hover */
+}
