@@ -25,18 +25,15 @@ exports.registerUser = async (req, res) => {
 
 exports.loginUser = async (req, res) => {
     try {
-        const { username, password } = req.body; 
 
-        let query = {};
-        if (/^\d+$/.test(username)) {
-            query.phoneNumber = username;
-        } else if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(username)) {
-            query.email = username;
-        } else {
-            query.username = username;
-        }
-
-        const user = await Users.findOne(query);
+        const { identifier, password } = req.body;
+        const user = await Users.findOne({
+            $or: [
+                { username: identifier },
+                { email: identifier },
+                { phoneNumber: identifier }
+            ]
+        });
 
         console.log(user);
         if (!user) {
