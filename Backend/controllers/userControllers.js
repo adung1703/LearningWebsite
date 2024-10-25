@@ -17,9 +17,9 @@ exports.registerUser = async (req, res) => {
             create_at
         });
         await user.save();
-        res.status(201).json({ message: 'Đăng ký tài khoản thành công!' });
+        res.status(201).json({ success: true, message: 'Đăng ký tài khoản thành công!' });
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        res.status(500).json({ success: false, message: error.message });
     }
 };
 

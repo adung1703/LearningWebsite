@@ -18,6 +18,9 @@ const courseSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Users'
     },
+    category: {
+        type: [String]
+    },
     chapters: {
         type: [
             {
