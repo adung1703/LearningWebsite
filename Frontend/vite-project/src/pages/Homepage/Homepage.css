@@ -1,6 +1,6 @@
 .Homepage {
     min-height: 100vh;
-    background: url('../../assets/background.jpg');
-    background-size: cover;
+    display: flex;
+    flex-direction: column;
     width: 100%;
 }

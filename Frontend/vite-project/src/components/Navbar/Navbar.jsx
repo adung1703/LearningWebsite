@@ -8,24 +8,20 @@ const Navbar = () => {
         <div className='navbar'>
             <div className="logo">
                 <img src={logo} alt="" />
-                <p>EduCoder</p>
+                <p>EduCode</p>
             </div>
-            <ul>
-
-                <li>Giới thiệu</li>
-                <li>Khóa học</li>
-                <li>Tin tức</li>
-
-            </ul>
-            {/* <div className="search-box">
-                <input type="text" placeholder='Search' />
-                <img src={search_icon} alt="" />
-            </div> */}
-            <div className="nav-btn">
-                <button className='btn'>Sign in</button>
-
-                <button className="btn">Sign up</button>
+            <div className='function'>
+                <ul>
+                    <li><a href="">All Path</a></li>
+                    <li><a href="">About</a></li>
+                    <li><a href="">Community</a></li>
+                    <li><a href="">Support Us</a></li>
+                    <li><a href="">Sign in</a></li>
+                    <li><button className='btn'>Get Started</button></li>
+                </ul>
             </div>
+            {/* <div className="dl-btn"></div> */}
+
         </div>
     )
 }
