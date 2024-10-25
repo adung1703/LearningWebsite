@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 
 const courseSchema = new mongoose.Schema({
-    name: {
+    title: {
         type: String,
         required: true
     },
@@ -12,7 +12,7 @@ const courseSchema = new mongoose.Schema({
         type: Number
     },
     image: {
-        type: String
+        type: String // url
     },
     instructor: {
         type: mongoose.Schema.Types.ObjectId,
@@ -25,7 +25,7 @@ const courseSchema = new mongoose.Schema({
                 order: Number,
                 content: [
                     {
-                        type: String,
+                        type: String, // lesson or assignment
                         lesson_id: mongoose.Schema.Types.ObjectId,
                         assignment_id: mongoose.Schema.Types.ObjectId,
                         order: Number

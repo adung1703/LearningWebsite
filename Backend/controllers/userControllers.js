@@ -1,5 +1,6 @@
 const Users = require('../models/users');
 const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
 
 exports.registerUser = async (req, res) => {
     try {
@@ -26,15 +27,24 @@ exports.loginUser = async (req, res) => {
     try {
         const { username, password } = req.body; 
 
-        const user = await User.findOne({ username });
+        let query = {};
+        if (/^\d+$/.test(username)) {
+            query.phoneNumber = username;
+        } else if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(username)) {
+            query.email = username;
+        } else {
+            query.username = username;
+        }
 
-        // console.log(user);
+        const user = await Users.findOne(query);
+
+        console.log(user);
         if (!user) {
             return res.status(400).json({ success: false, message: 'Tài khoản không tồn tại' });
         }
 
-        const hashedPassword = await bcrypt.hash(password, 10);
-        if (hashedPassword !== user.password) {
+        const isMatch = await bcrypt.compare(password, user.password);
+        if (!isMatch) {
             return res.status(400).json({ success: false, message: 'Mật khẩu không chính xác' });
         }
 
@@ -61,9 +71,9 @@ exports.loginUser = async (req, res) => {
     }
 };
 
-exports.getUserInfor = async (req, res) => {
+exports.getUserInfo = async (req, res) => {
     try {
-        const user = await User.findById(req.user.id).select('-password');
+        const user = await Users.findById(req.user.id).select('-password');
         if (!user) {
             return res.status(404).json({ success: false, message: 'Không tìm thấy người dùng' });
         }
