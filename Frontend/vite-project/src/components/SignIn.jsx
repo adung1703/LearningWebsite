@@ -1,13 +1,56 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 const SignIn = () => {
-  const [email, setEmail] = useState('');
+  const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
+  const [errorMessage, setErrorMessage] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
+  const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log('Email:', email, 'Password:', password);
+    
+    try {
+      const response = await fetch('http://localhost:3000/user/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          identifier,
+          password,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setSuccessMessage('Đăng nhập thành công!');
+        setErrorMessage('');
+
+        // Remove old token if it exists
+        localStorage.removeItem('token');
+
+        // Store the new token in local storage
+        localStorage.setItem('token', data.token);
+
+        // Set a timer to remove the token after 2 hours
+        setTimeout(() => {
+          localStorage.removeItem('token');
+          console.log('Token đã hết hạn và đã được xóa khỏi local storage.');
+        }, 2 * 60 * 60 * 1000); // 2 hours in milliseconds
+
+        // Redirect to the profile page after login
+        navigate('/profile');
+      } else {
+        setErrorMessage(data.message);
+        setSuccessMessage('');
+      }
+    } catch (error) {
+      setErrorMessage('Đã xảy ra lỗi khi đăng nhập!');
+      setSuccessMessage('');
+    }
   };
 
   return (
@@ -20,13 +63,13 @@ const SignIn = () => {
       <div style={styles.formContainer}>
         <form onSubmit={handleSubmit} style={styles.form}>
           <div style={styles.inputGroup}>
-            <label style={styles.label} htmlFor="email">Email</label>
+            <label style={styles.label} htmlFor="identifier">Tên người dùng / Email / Số điện thoại</label>
             <input
               style={styles.input}
-              type="email"
-              id="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              type="text"
+              id="identifier"
+              value={identifier}
+              onChange={(e) => setIdentifier(e.target.value)}
               required
             />
           </div>
@@ -43,27 +86,11 @@ const SignIn = () => {
             />
           </div>
           
-          <p style={styles.forgotPassword}>
-            <a href="#" style={styles.forgotPasswordLink}>Quên mật khẩu?</a>
-          </p>
+          {errorMessage && <p style={{ color: 'red' }}>{errorMessage}</p>}
+          {successMessage && <p style={{ color: 'green' }}>{successMessage}</p>}
           
           <button type="submit" style={styles.button}>Đăng nhập</button>
         </form>
-
-        <div style={styles.orContinueContainer}>
-          <div style={styles.line}></div>
-          <p style={styles.orContinueText}>Hoặc đăng nhập với</p>
-          <div style={styles.line}></div>
-        </div>
-
-        <div style={styles.socialButtonsContainer}>
-          <button style={styles.socialButton}>
-            <img src="/path-to-github-icon" alt="GitHub" style={styles.icon} /> GitHub
-          </button>
-          <button style={styles.socialButton}>
-            <img src="/path-to-google-icon" alt="Google" style={styles.icon} /> Google
-          </button>
-        </div>
       </div>
     </div>
   );
@@ -86,24 +113,13 @@ const styles = {
     marginBottom: '5px',
     color: '#333',
   },
-  subtitle: {
-    fontSize: '16px',
-    marginBottom: '20px',
-    color: '#555',
-  },
-  signUpLink: {
-    color: '#555',
-    textDecoration: 'underline',
-    cursor: 'pointer',
-    transition: 'text-decoration 0.2s ease-in-out',
-  },
   formContainer: {
     backgroundColor: '#fff',
     padding: '40px',
     borderRadius: '10px',
     boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
     width: '100%',
-    maxWidth: '600px', // Increased width of the box
+    maxWidth: '600px',
     boxSizing: 'border-box',
   },
   form: {
@@ -129,15 +145,6 @@ const styles = {
     outline: 'none',
     transition: 'border-color 0.2s',
   },
-  forgotPassword: {
-    textAlign: 'right',
-  },
-  forgotPasswordLink: {
-    textDecoration: 'underline',
-    color: '#0f766e',
-    cursor: 'pointer',
-    transition: 'text-decoration 0.2s ease-in-out',
-  },
   button: {
     padding: '12px',
     borderRadius: '5px',
@@ -147,48 +154,6 @@ const styles = {
     fontSize: '16px',
     cursor: 'pointer',
     transition: 'background-color 0.3s',
-  },
-  buttonHover: {
-    backgroundColor: '#0a5c52',
-  },
-  orContinueContainer: {
-    display: 'flex',
-    alignItems: 'center',
-    marginTop: '20px',
-    marginBottom: '20px',
-  },
-  line: {
-    flex: 1,
-    height: '1px',
-    backgroundColor: '#ccc',
-  },
-  orContinueText: {
-    margin: '0 10px',
-    fontSize: '16px',
-    color: '#555',
-  },
-  socialButtonsContainer: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    marginTop: '20px',
-  },
-  socialButton: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: '10px',
-    width: '48%',
-    border: '1px solid #ccc',
-    borderRadius: '5px',
-    backgroundColor: '#fff',
-    cursor: 'pointer',
-    transition: 'transform 0.2s ease-in-out',
-  },
-  socialButtonHover: {
-    fontWeight: 'bold', // Increase font weight on hover
-  },
-  icon: {
-    marginRight: '8px',
   },
 };
 

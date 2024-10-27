@@ -20,10 +20,9 @@ const ProfilePage = () => {
             const response = await fetch('http://localhost:3000/user/user-info', {
                 method: 'GET',
                 headers: {
-                    'Auth-Token': localStorage.getItem('token'), // Change to 'Auth-Token'
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`, // Include the token for authorization
                 },
             });
-            
 
             const data = await response.json();
             if (response.ok) {

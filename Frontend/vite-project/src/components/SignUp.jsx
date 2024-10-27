@@ -1,16 +1,63 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 const SignUp = () => {
   const [username, setUsername] = useState('');
+  const [fullname, setFullname] = useState('');
   const [email, setEmail] = useState('');
+  const [phoneNumber, setPhoneNumber] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [errorMessage, setErrorMessage] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
+  const navigate = useNavigate(); // Hook to navigate
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Handle the sign-up logic here
-    console.log('Username:', username, 'Email:', email, 'Password:', password, 'Confirm Password:', confirmPassword);
+
+    if (password !== confirmPassword) {
+      setErrorMessage('Mật khẩu xác nhận không khớp!');
+      return;
+    }
+
+    // Validate phone number
+    const phoneRegex = /^\d+$/; // Regex to check if the phone number contains only digits
+    if (!phoneRegex.test(phoneNumber)) {
+      setErrorMessage('Số điện thoại chỉ được chứa số.');
+      return;
+    }
+
+    try {
+      const response = await fetch('http://localhost:3000/user/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          fullname,
+          username,
+          email,
+          phoneNumber,
+          password,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setSuccessMessage(data.message);
+        setErrorMessage('');
+
+        // Redirect to SignIn page after 3 seconds
+        setTimeout(() => {
+          navigate('/sign-in');
+        }, 1500);
+      } else {
+        setErrorMessage(data.message);
+      }
+    } catch (error) {
+      setErrorMessage('Đã xảy ra lỗi khi đăng ký!');
+    }
   };
 
   return (
@@ -35,6 +82,18 @@ const SignUp = () => {
           </div>
 
           <div style={styles.inputGroup}>
+            <label style={styles.label} htmlFor="fullname">Họ và tên</label>
+            <input
+              style={styles.input}
+              type="text"
+              id="fullname"
+              value={fullname}
+              onChange={(e) => setFullname(e.target.value)}
+              required
+            />
+          </div>
+
+          <div style={styles.inputGroup}>
             <label style={styles.label} htmlFor="email">Email</label>
             <input
               style={styles.input}
@@ -42,6 +101,18 @@ const SignUp = () => {
               id="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
+              required
+            />
+          </div>
+
+          <div style={styles.inputGroup}>
+            <label style={styles.label} htmlFor="phoneNumber">Số điện thoại</label>
+            <input
+              style={styles.input}
+              type="tel"
+              id="phoneNumber"
+              value={phoneNumber}
+              onChange={(e) => setPhoneNumber(e.target.value)}
               required
             />
           </div>
@@ -70,25 +141,11 @@ const SignUp = () => {
             />
           </div>
 
-          <p style={styles.termsText}>Bằng cách đăng ký, bạn đồng ý với các điều khoản sử dụng của chúng tôi.</p>
+          {errorMessage && <p style={{ color: 'red' }}>{errorMessage}</p>}
+          {successMessage && <p style={{ color: 'green' }}>{successMessage}</p>}
 
           <button type="submit" style={styles.button}>Đăng ký</button>
         </form>
-        <div style={styles.orContinueContainer}>
-          <div style={styles.line}></div>
-          <p style={styles.orContinueText}>Hoặc đăng nhập với</p>
-          <div style={styles.line}></div>
-        </div>
-
-        <div style={styles.socialButtonsContainer}>
-          <button style={styles.socialButton}>
-            <img src="/path-to-github-icon" alt="GitHub" style={styles.icon} /> GitHub
-          </button>
-          <button style={styles.socialButton}>
-            <img src="/path-to-google-icon" alt="Google" style={styles.icon} /> Google
-          </button>
-        </div>
-
       </div>
     </div>
   );
@@ -110,17 +167,6 @@ const styles = {
     fontWeight: 'bold',
     marginBottom: '5px',
     color: '#333',
-  },
-  subtitle: {
-    fontSize: '16px',
-    marginBottom: '20px',
-    color: '#555',
-  },
-  signInLink: {
-    color: '#555',
-    textDecoration: 'underline',
-    cursor: 'pointer',
-    transition: 'text-decoration 0.2s ease-in-out',
   },
   formContainer: {
     backgroundColor: '#fff',
@@ -154,12 +200,6 @@ const styles = {
     outline: 'none',
     transition: 'border-color 0.2s',
   },
-  termsText: {
-    textAlign: 'center',
-    color: '#555',
-    fontSize: '14px',
-    marginTop: '20px',
-  },
   button: {
     padding: '12px',
     borderRadius: '5px',
@@ -169,48 +209,6 @@ const styles = {
     fontSize: '16px',
     cursor: 'pointer',
     transition: 'background-color 0.3s',
-  },
-  buttonHover: {
-    backgroundColor: '#0a5c52',
-  },
-  orContinueContainer: {
-    display: 'flex',
-    alignItems: 'center',
-    marginTop: '20px',
-    marginBottom: '20px',
-  },
-  line: {
-    flex: 1,
-    height: '1px',
-    backgroundColor: '#ccc',
-  },
-  orContinueText: {
-    margin: '0 10px',
-    fontSize: '16px',
-    color: '#555',
-  },
-  socialButtonsContainer: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    marginTop: '20px',
-  },
-  socialButton: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: '10px',
-    width: '48%',
-    border: '1px solid #ccc',
-    borderRadius: '5px',
-    backgroundColor: '#fff',
-    cursor: 'pointer',
-    transition: 'transform 0.2s ease-in-out',
-  },
-  socialButtonHover: {
-    fontWeight: 'bold', // Increase font weight on hover
-  },
-  icon: {
-    marginRight: '8px',
   },
 };
 
