@@ -1,4 +1,6 @@
 const Users = require('../models/users');
+const Progress = require('../models/course_progresses');
+const Courses = require('../models/courses');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 
@@ -46,6 +48,7 @@ exports.loginUser = async (req, res) => {
         }
 
         // Tạo token JWT
+
         const token = jwt.sign({ 
                     id: user._id, 
                     username: user.username, 
@@ -54,6 +57,7 @@ exports.loginUser = async (req, res) => {
                     phoneNumber: user.phoneNumber,
                     password: user.password,
                     role: user.role,
+                    coursesJoined: user.coursesJoined,
                     avatar: user.avatar,
                     create_at: user.create_at
         }, process.env.JWT_SECRET, {
@@ -81,3 +85,45 @@ exports.getUserInfo = async (req, res) => {
         res.status(500).json({ success: false, message: 'Đã xảy ra lỗi khi lấy thông tin người dùng' });
     }
 };
+
+exports.joinCourse = async (req, res) => {
+    try {
+        if (!req.body || req.body === undefined || req.body === '' || req.body === null) {
+            return res.status(400).json({ success: false, message: 'Thiếu thông tin khóa học' });
+        }
+        const { courseId } = req.body;
+        if (!courseId || courseId === undefined || courseId === '' || courseId === null) {
+            return res.status(400).json({ success: false, message: 'Thiếu thông tin khóa học' });
+        }   
+        const user = await Users.findById(req.user.id);
+        if (!user) {
+            return res.status(404).json({ success: false, message: 'Không tìm thấy người dùng' });
+        }
+        if (user.coursesJoined.includes(courseId)) {
+            return res.status(400).json({ success: false, message: 'Bạn đã tham gia khóa học này rồi' });
+        }
+        user.coursesJoined.push(courseId);
+        await user.save();
+
+        const course = await Courses.findById(courseId);
+        
+        const progress = new Progress({
+            userId: req.user.id,
+            courseId
+        });
+
+        course.chapters.forEach(chapter => {
+            progress.progress.push({
+                chapter_order: chapter.order,
+                lessons_completed: [],
+                assignments_completed: []
+            });
+        });
+
+        await progress.save();
+        res.status(200).json({ success: true, message: 'Tham gia khóa học thành công' });
+    } catch (error) {
+        console.error('Lỗi khi tham gia khóa học:', error);
+        res.status(500).json({ success: false, message: 'Đã xảy ra lỗi khi tham gia khóa học' });
+    }
+}
