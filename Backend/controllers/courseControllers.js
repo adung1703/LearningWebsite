@@ -95,3 +95,20 @@ exports.getCourseDetail = async (req, res) => {
         });
     }
 }
+
+exports.addCourse = async (req, res) => {
+    try {
+        const { role } = req.user;
+        if (role !== 'admin' && role !== 'instructor') {
+            return res.status(403).json({ success: false, message: 'Bạn không có quyền thêm khóa học' });
+        }
+        const course = await Courses.create(req.body);
+        res.status(201).json({ success: true, data: course, message: 'Thêm khóa học thành công' });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: error.message
+        });
+    }
+}
+

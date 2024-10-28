@@ -28,7 +28,7 @@ const courseSchema = new mongoose.Schema({
                 order: Number,
                 content: [
                     {
-                        type: String, // lesson or assignment
+                        content_type: String, // lesson or assignment
                         lesson_id: mongoose.Schema.Types.ObjectId,
                         assignment_id: mongoose.Schema.Types.ObjectId,
                         order: Number

@@ -5,6 +5,7 @@ const cors = require('cors');
 
 const userRoutes = require('./routes/userRoutes.js');
 const courseRoutes = require('./routes/courseRoutes.js');
+const lessonRoutes = require('./routes/lessonRoutes.js');
 
 const DB_URI = 'mongodb+srv://adung1703:Adung_2003@cluster0.klijv.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0';
 const mongoose = require("mongoose");
@@ -27,6 +28,7 @@ app.use(bodyParser.json());
 
 app.use('/user', userRoutes);
 app.use('/course', courseRoutes);
+app.use('/lesson', lessonRoutes);
 
 require('dotenv').config();
 const port = process.env.PORT || 3000;
