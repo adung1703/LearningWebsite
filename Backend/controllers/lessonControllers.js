@@ -2,10 +2,25 @@ const course_progresses = require('../models/course_progresses');
 const Courses = require('../models/courses');
 const Lessons = require('../models/lessons');
 
+exports.getAllLessons = async (req, res) => {
+    try {
+        if (req.user.role !== 'admin' && req.user.role !== 'instructor') {
+            return res.status(403).json({ success: false, message: 'Bạn không có quyền xem tất cả bài học' });
+        }
+        const lessons = await Lessons.find().orderBy('create_at');
+        res.status(200).json({ success: true, data: lessons });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: error.message
+        });
+    }
+}
+
 exports.addLesson = async (req, res) => {
     try {
         let { chapter_number, lesson } = req.body;
-        const { role } = req.user;
+        const { role, id } = req.user;
         chapter_number = parseInt(chapter_number);
 
         const course = await Courses.findById(lesson.course);
@@ -14,7 +29,7 @@ exports.addLesson = async (req, res) => {
             return res.status(404).json({ success: false, message: 'Không tìm thấy khóa học' });
         }
 
-        if (role !== 'admin' && role !== course.instructor.toString()) {
+        if (role !== 'admin' && id !== course.instructor.toString()) {
             return res.status(403).json({ success: false, message: 'Bạn không có quyền thêm bài học' });
         }
 

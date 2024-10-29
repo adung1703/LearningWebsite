@@ -80,13 +80,16 @@ exports.getCourseDetail = async (req, res) => {
     try {
         const { courseId } = req.params;
         const { coursesJoined } = await Users.findById(req.user.id).select('coursesJoined');
-        if (!coursesJoined.includes(courseId)) {
-            return res.status(403).json({ success: false, message: 'Không có quyền truy cập khóa học này' });
-        }
+        
         const course = await Courses.findById(courseId);
         if (!course) {
             return res.status(404).json({ success: false, message: 'Không tìm thấy khóa học' });
         }
+
+        if (!coursesJoined.includes(courseId) && req.user.role !== 'admin' && req.user.id !== course.instructor.toString()) {
+            return res.status(403).json({ success: false, message: 'Không có quyền truy cập khóa học này' });
+        }
+
         res.status(200).json({ success: true, data: course });
     } catch (error) {
         res.status(500).json({
@@ -103,6 +106,8 @@ exports.addCourse = async (req, res) => {
             return res.status(403).json({ success: false, message: 'Bạn không có quyền thêm khóa học' });
         }
         const course = await Courses.create(req.body);
+        course.instructor = req.user.id;
+        await course.save();
         res.status(201).json({ success: true, data: course, message: 'Thêm khóa học thành công' });
     } catch (error) {
         res.status(500).json({
@@ -112,3 +117,29 @@ exports.addCourse = async (req, res) => {
     }
 }
 
+exports.addChapter = async (req, res) => {
+    try {
+        const { courseId } = req.params;
+        const course = await Courses.findById(courseId);
+        if (!course) {
+            return res.status(404).json({ success: false, message: 'Không tìm thấy khóa học' });
+        }
+
+        const { role, id } = req.user;
+        if (role !== 'admin' && course.instructor.toString() !== id) {
+            return res.status(403).json({ success: false, message: 'Bạn không có quyền thêm chương' });
+        }
+
+        const newChapter = req.body;
+        newChapter.order = course.chapters.length + 1;
+        
+        course.chapters.push(newChapter);
+        await course.save();
+        res.status(201).json({ success: true, data: course, message: 'Thêm chương mới thành công' });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: error.message
+        });
+    }
+}
