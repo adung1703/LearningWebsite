@@ -1,0 +1,118 @@
+.Dashboard {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.search-section {
+    margin-top: 120px; /* Space below the navbar */
+    width: 90%;
+    max-width: 1200px;
+    display: flex;
+    justify-content: space-between;
+}
+
+.search-input {
+    flex-grow: 1; /* Allow input to take remaining space */
+    padding: 10px; /* Add padding */
+    border: 1px solid #0f766e; /* Input border */
+    border-radius: 5px; /* Rounded corners */
+    margin-right: 10px; /* Space between input and button */
+}
+
+.search-button {
+    padding: 10px 20px; /* Button padding */
+    background-color: #0f766e; /* Button background color */
+    color: white; /* Button text color */
+    border: none; /* No border */
+    border-radius: 5px; /* Rounded corners */
+    cursor: pointer; /* Pointer cursor */
+    transition: background-color 0.2s; /* Smooth background change */
+}
+
+.search-button:hover {
+    background-color: #0d5e58; /* Darker shade on hover */
+}
+
+.courses-container {
+    margin-top: 20px; /* Adjusted space for search section */
+    width: 90%;
+    max-width: 1200px;
+}
+
+.courses-section {
+    border: 1px solid #0f766e; /* Rectangle border */
+    border-radius: 8px;
+    padding: 20px;
+    background-color: white; /* Main background color */
+}
+
+.courses-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr); /* 5 items per row */
+    gap: 10px;
+}
+
+.course-item {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between; /* Ensure space between sections */
+    border: 1px solid #0f766e; /* Square border */
+    border-radius: 8px;
+    background-color: #f9f9f9;
+    transition: transform 0.2s;
+    cursor: pointer; /* Indicates it's clickable */
+    padding: 10px;
+    width: 100%; /* Ensure the item takes full width of the grid cell */
+    height: 200px; /* Set a fixed height (adjust as needed) */
+    position: relative; /* To contain absolutely positioned elements */
+    box-sizing: border-box; /* Include padding and border in height/width */
+    overflow: hidden; /* Hide overflow content */
+}
+
+/* Title at the top, allow wrapping */
+.course-item h3 {
+    margin: 0; /* Reset margin */
+    font-size: 1.1em; /* Adjust font size */
+    text-align: center; /* Center align the text */
+    flex-shrink: 0; /* Prevent shrinking */
+    overflow: hidden; /* Hide overflow text */
+    text-overflow: ellipsis; /* Add ellipsis for overflow text */
+    white-space: nowrap; /* Prevent wrapping */
+}
+
+/* Price in the middle */
+.course-item .price {
+    font-weight: bold; /* Make price bold */
+    color: #FFA500; /* Orange color for price */
+    display: flex; /* Use flexbox */
+    align-items: center; /* Center vertically */
+    justify-content: center; /* Center horizontally */
+    flex-grow: 1; /* Allow to take available space */
+    text-align: center; /* Ensure text is centered */
+}
+
+/* Instructor at the bottom */
+.course-item .instructor {
+    margin-top: 5px; /* Spacing between price and instructor */
+    text-align: center; /* Center align the text */
+    color: black; /* Set color to black */
+    font-weight: normal; /* Make text normal weight */
+    overflow: hidden; /* Hide overflow text */
+    text-overflow: ellipsis; /* Add ellipsis for overflow text */
+    white-space: nowrap; /* Prevent wrapping */
+}
+
+.course-item:hover {
+    transform: scale(1.05); /* Hover effect */
+}
+
+.pagination {
+    margin-top: 20px;
+    display: flex;
+    justify-content: center;
+}
+
+.pagination button {
+    margin: 0 5px;
+}
