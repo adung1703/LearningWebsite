@@ -9,19 +9,18 @@ const submissionSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Users'
     },
-    answer: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Answers'
+    submission_detail: {
+        type: [{
+            content: [String],
+            submit_at: {
+                type: Date,
+                default: Date.now()
+            },
+            score: Number
+        }]
     },
-    submission_content: {
-        type: [String]
-    },
-    score: {
+    highest_score: {
         type: Number
-    },
-    submit_at: {
-        type: Date,
-        default: Date.now
     },
     submit_count: {
         type: Number,

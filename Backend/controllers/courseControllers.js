@@ -9,7 +9,7 @@ exports.getCourses = async (req, res) => {
         let skip = (parseInt(pageNumber) - 1) * limit; // Số khóa học đầu dãy bỏ qua
         if (skip < 0) skip = 0;
 
-        const courses = await Courses.find().limit(limit).skip(skip).select('-chapters');
+        const courses = await Courses.find().limit(limit).skip(skip).select('-chapters').populate('instructor', 'fullname avatar');
         const totalCourses = await Courses.countDocuments();
 
         res.status(200).json({
@@ -31,7 +31,7 @@ exports.getMyCourses = async (req, res) => {
     try {
         const { id } = req.user; // Lấy danh sách khóa học đã tham gia của user
         const { coursesJoined } = await Users.findById(id).select('coursesJoined');
-        const courses = await Courses.find({ _id: { $in: coursesJoined } }).select('-chapters'); // Lấy thông tin khóa học trừ nội dung
+        const courses = await Courses.find({ _id: { $in: coursesJoined } }).select('-chapters').populate('instructor', 'fullname avatar'); // Lấy thông tin khóa học trừ nội dung
         const progresses = await CourseProgresses.find({ userId: id }); // Lấy thông tin tiến độ học tập của user
 
         courses.forEach(course => {
@@ -65,7 +65,7 @@ exports.searchCourses = async (req, res) => {
                 { category: { $regex: keyword, $options: 'i' } },
                 { instructor: { $in: instructor } }
             ]
-        });
+        }).select('-chapters').populate('instructor', 'fullname avatar');
 
         res.status(200).json({ success: true, data: courses });
     } catch (error) {
@@ -81,7 +81,7 @@ exports.getCourseDetail = async (req, res) => {
         const { courseId } = req.params;
         const { coursesJoined } = await Users.findById(req.user.id).select('coursesJoined');
         
-        const course = await Courses.findById(courseId);
+        const course = await Courses.findById(courseId).populate('instructor', 'fullname avatar');
         if (!course) {
             return res.status(404).json({ success: false, message: 'Không tìm thấy khóa học' });
         }
@@ -135,7 +135,7 @@ exports.addChapter = async (req, res) => {
         
         course.chapters.push(newChapter);
         await course.save();
-        res.status(201).json({ success: true, data: course, message: 'Thêm chương mới thành công' });
+        res.status(201).json({ success: true, data: newChapter, message: 'Thêm chương mới thành công' });
     } catch (error) {
         res.status(500).json({
             success: false,
