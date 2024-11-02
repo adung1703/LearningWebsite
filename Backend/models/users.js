@@ -24,7 +24,7 @@ const userSchema = new mongoose.Schema({
     },
     role: {
         type: String,
-        default: 'user'
+        default: 'user' // user, instructor, admin
     },
     avatar: {
         type: String,

@@ -92,8 +92,10 @@
     text-align: center; /* Ensure text is centered */
 }
 
-/* Instructor at the bottom */
+/* Instructor at the bottom with avatar on the left */
 .course-item .instructor {
+    display: flex; /* Flexbox for avatar and name alignment */
+    align-items: center; /* Center align avatar and name */
     margin-top: 5px; /* Spacing between price and instructor */
     text-align: center; /* Center align the text */
     color: black; /* Set color to black */
@@ -101,6 +103,13 @@
     overflow: hidden; /* Hide overflow text */
     text-overflow: ellipsis; /* Add ellipsis for overflow text */
     white-space: nowrap; /* Prevent wrapping */
+}
+
+.instructor-avatar {
+    width: 30px; /* Avatar size */
+    height: 30px;
+    border-radius: 50%; /* Round avatar */
+    margin-right: 8px; /* Space between avatar and name */
 }
 
 .course-item:hover {

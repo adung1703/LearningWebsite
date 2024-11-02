@@ -87,7 +87,14 @@ const Dashboard = () => {
                                     <p className="price">
                                         {formatPrice(course.price)}
                                     </p>
-                                    <p className="instructor">Mã giảng viên: {course.instructor}</p>
+                                    <div className="instructor">
+                                        <img 
+                                            src={course.instructor.avatar} 
+                                            alt="Instructor Avatar" 
+                                            className="instructor-avatar"
+                                        />
+                                        <span>{course.instructor.fullname}</span>
+                                    </div>
                                 </div>
                             ))}
                         </div>

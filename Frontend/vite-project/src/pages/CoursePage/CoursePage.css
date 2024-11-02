@@ -19,6 +19,12 @@
     margin-bottom: 20px;
 }
 
+.course-header p.course-description {
+    font-size: 1.2em; /* Increase text size, adjust as needed */
+    width: 70%; /* Set width to 70% of the screen */
+    margin: 0 auto; /* Center the description */
+}
+
 .progress-bar {
     width: 100%;
     max-width: 600px;
