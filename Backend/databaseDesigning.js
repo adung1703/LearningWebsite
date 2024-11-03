@@ -107,11 +107,41 @@ assignment = {
 } // assignment 1, assignment 2, assignment 3, assignment 4, assignment 5, assignment 6, assignment 7, assignment 8, assignment 9, assignment 10
 
 answer = {
-    _id: ObjectId,
-    answer_content: ["B", "B"],
-    create_at: Date,
-    update_at: Date
-}
+    answer_content: {
+        type: [String],
+        required: true
+    },
+    language: {
+        type: String
+    },
+    version: {
+        type: String
+    },
+    public_testcases: {
+        type: [
+            {
+                input: String,
+                expected_output: String
+            }
+        ]
+    },
+    private_testcases: {
+        type: [
+            {
+                input: String,
+                expected_output: String
+            }
+        ]
+    },
+    create_at: {
+        type: Date,
+        default: Date.now
+    },
+    update_at: {
+        type: Date,
+        default: Date.now
+    }
+};
 
 // enrollment = {
 //     _id: ObjectId,

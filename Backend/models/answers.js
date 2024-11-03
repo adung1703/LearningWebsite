@@ -5,6 +5,34 @@ const answerSchema = new mongoose.Schema({
         type: [String],
         required: true
     },
+    language: {
+        type: String
+    },
+    version: {
+        type: String
+    },
+    pre_code: {
+        type: String
+    },
+    next_code: {
+        type: String
+    },
+    public_testcases: {
+        type: [
+            {
+                input: String,
+                expected_output: String
+            }
+        ]
+    },
+    private_testcases: {
+        type: [
+            {
+                input: String,
+                expected_output: String
+            }
+        ]
+    },
     create_at: {
         type: Date,
         default: Date.now
