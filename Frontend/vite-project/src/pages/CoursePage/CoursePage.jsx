@@ -162,7 +162,7 @@ const CoursePage = () => {
                 </div>
                 {course.chapters.map((chapter, index) => (
                     <div key={index} className="chapter-section">
-                        <h2>{chapter.chapter_title}</h2>
+                        <h2>{chapter.order}. {chapter.chapter_title}</h2>
                         {renderLessons(chapter.content, index)}
                     </div>
                 ))}

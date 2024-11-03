@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom'; 
 import Navbar from '../../components/Navbar/Navbar';
+import CommentsSection from '../../components/CommentsSection/CommentsSection'; // Import CommentsSection component
 import './LessonPage.css'; 
 
 const LessonPage = () => {
@@ -93,7 +94,7 @@ const LessonPage = () => {
                     <iframe
                         width="560"
                         height="315"
-                        src={lesson.url.replace("watch?v=", "embed/")} // Embed format for YouTube
+                        src={lesson.url.replace("watch?v=", "embed/")}
                         title={lesson.title}
                         frameBorder="0"
                         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
@@ -111,10 +112,10 @@ const LessonPage = () => {
                         <button>Next Lesson</button>
                     </Link>
                 ) : (
-                    <button className="next-lesson" disabled>Next Lesson</button> // Disable button if no next lesson
+                    <button className="next-lesson" disabled>Next Lesson</button>
                 )}
             </div>
-
+            <CommentsSection lessonId={lessonId} /> {/* Add CommentsSection here */}
         </div>
     );
 };

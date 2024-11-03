@@ -42,7 +42,7 @@ const SignIn = () => {
         }, 2 * 60 * 60 * 1000); // 2 hours in milliseconds
 
         // Redirect to the profile page after login
-        navigate('/courses');
+        navigate('/profile');
       } else {
         setErrorMessage(data.message);
         setSuccessMessage('');
