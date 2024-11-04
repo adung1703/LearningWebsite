@@ -1,20 +1,22 @@
 const axios = require("axios");
 
-// Mã nguồn của người dùng
-const userCode = `
-def add(x, y):
-    return int(x) + int(y)
-
-x, y = map(int, input().split())
-print(add(x, y))
-`;
-
 // Các test case
 const testCases = [
     { input: "2 3", expectedOutput: "5\n" },
     { input: "10 20", expectedOutput: "30\n" },
     { input: "-5 5", expectedOutput: "0\n" }
 ];
+
+const userCode = `
+    const x = readInt();
+    const y = readInt();
+
+    function sum(a, b) {
+        return a + b;
+    }
+
+    console.log(sum(x, y));
+    `;
 
 async function executeCode(language, version, code, input = "") {
     const data = {
@@ -44,9 +46,10 @@ async function runTests() {
     let score = 0;
 
     for (const [index, test] of testCases.entries()) {
-        const output = await executeCode("python", "3.10.0", userCode, test.input);
+
+        const output = await executeCode("javascript", "18.15.0", userCode, test.input);
         
-        if (output === test.expectedOutput) {
+        if (output == test.expectedOutput) {
             console.log(`Testcase ${index + 1}: Đúng`);
             score++;
         } else {

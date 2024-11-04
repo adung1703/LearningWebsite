@@ -8,7 +8,7 @@ exports.getAllAssignments = async (req, res) => {
         if (req.user.role !== 'admin' && req.user.role !== 'instructor') {
             return res.status(403).json({ success: false, message: 'Bạn không có quyền xem tất cả bài tập' });
         }
-        const assignments = await Assignments.find().orderBy('create_at');
+        const assignments = await Assignments.find().sort({ create_at: 'desc' }).populate('course', 'course_title');
         res.status(200).json({ success: true, data: assignments });
     } catch (error) {
         res.status(500).json({
@@ -20,7 +20,7 @@ exports.getAllAssignments = async (req, res) => {
 
 exports.addAssignment = async (req, res) => {
     try {
-        let { chapter_number, assignment } = req.body;
+        let { chapter_number, assignment, answer } = req.body;
         const { role, id } = req.user;
         chapter_number = parseInt(chapter_number);
 
@@ -34,9 +34,8 @@ exports.addAssignment = async (req, res) => {
             return res.status(403).json({ success: false, message: 'Bạn không có quyền thêm bài tập' });
         }
 
-        const answers = await Answers.create({ answer_content: assignment.answer_content });
-        delete assignment.answer_content;
-        assignment.answers = answers._id;
+        const newAnswer = await Answers.create(answer);
+        assignment.answers = newAnswer._id;
 
         const newAssignment = await Assignments.create(assignment);
 
@@ -67,7 +66,7 @@ exports.addAssignment = async (req, res) => {
 
         chapter.content.push({
             content_type: 'assignment',
-            lesson_id: newAssignment._id.toString(),
+            assignment_id: newAssignment._id.toString(),
             order: chapter.content.length + 1
         });
 

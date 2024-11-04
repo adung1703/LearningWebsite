@@ -2,8 +2,7 @@ const mongoose = require('mongoose');
 
 const answerSchema = new mongoose.Schema({
     answer_content: {
-        type: [String],
-        required: true
+        type: [String]
     },
     language: {
         type: String
