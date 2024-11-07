@@ -37,7 +37,6 @@ exports.loginUser = async (req, res) => {
             ]
         });
 
-        console.log(user);
         if (!user) {
             return res.status(400).json({ success: false, message: 'Tài khoản không tồn tại' });
         }
@@ -126,4 +125,29 @@ exports.joinCourse = async (req, res) => {
         console.error('Lỗi khi tham gia khóa học:', error);
         res.status(500).json({ success: false, message: 'Đã xảy ra lỗi khi tham gia khóa học' });
     }
-}
+};
+
+exports.updateUserInfo = async (req, res) => {
+    try {
+        const { fullname, username, email, phoneNumber, password, avatar } = req.body;
+        const user = await Users.findById(req.user.id);
+        if (!user) {
+            return res.status(404).json({ success: false, message: 'Không tìm thấy người dùng' });
+        }
+
+        if (fullname) user.fullname = fullname;
+        if (username) user.username = username;
+        if (email) user.email = email;
+        if (phoneNumber) user.phoneNumber = phoneNumber;
+        if (avatar) user.avatar = avatar;
+        if (password) {
+            user.password = await bcrypt.hash(password, 10);
+        }
+
+        await user.save();
+        res.status(200).json({ success: true, message: 'Cập nhật thông tin cá nhân thành công' });
+    } catch (error) {
+        console.error('Lỗi khi cập nhật thông tin cá nhân:', error);
+        res.status(500).json({ success: false, message: 'Đã xảy ra lỗi khi cập nhật thông tin cá nhân' });
+    }
+};
