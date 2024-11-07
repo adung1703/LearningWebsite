@@ -16,8 +16,8 @@ async function executeCode(language, version, code, input = "") {
                 content: code
             }
         ],
-        stdin: null,
-        args: args,
+        stdin: language === "c++" || language === "python" ? input : null,
+        args: language === "javascript" ? args : null,
         compile_timeout: 10000,
         run_timeout: 5000,
         compile_memory_limit: -1,
