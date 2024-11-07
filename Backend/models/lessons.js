@@ -33,7 +33,8 @@ const lessonSchema = new mongoose.Schema({
                     }
                 ]
             }
-        ]
+        ],
+        default: []
     },
     create_at: {
         type: Date,
