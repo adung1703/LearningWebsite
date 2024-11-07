@@ -14,108 +14,109 @@
 
 .search-input {
     flex-grow: 1; /* Allow input to take remaining space */
-    padding: 10px; /* Add padding */
-    border: 1px solid #0f766e; /* Input border */
-    border-radius: 5px; /* Rounded corners */
-    margin-right: 10px; /* Space between input and button */
+    padding: 10px;
+    border: 1px solid #0f766e;
+    border-radius: 5px;
+    margin-right: 10px;
 }
 
 .search-button {
-    padding: 10px 20px; /* Button padding */
-    background-color: #0f766e; /* Button background color */
-    color: white; /* Button text color */
-    border: none; /* No border */
-    border-radius: 5px; /* Rounded corners */
-    cursor: pointer; /* Pointer cursor */
-    transition: background-color 0.2s; /* Smooth background change */
+    padding: 10px 20px;
+    background-color: #0f766e;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.2s;
 }
 
 .search-button:hover {
-    background-color: #0d5e58; /* Darker shade on hover */
+    background-color: #0d5e58;
 }
 
+/* Wrapper container to ensure width consistency */
 .courses-container {
-    margin-top: 20px; /* Adjusted space for search section */
+    margin-top: 20px;
     width: 90%;
     max-width: 1200px;
+    box-sizing: border-box; /* Ensures padding/border is included in width */
 }
 
 .courses-section {
-    border: 1px solid #0f766e; /* Rectangle border */
+    border: 1px solid #0f766e;
     border-radius: 8px;
     padding: 20px;
-    background-color: white; /* Main background color */
+    background-color: white;
+    box-sizing: border-box; /* Ensures padding/border is included in width */
 }
 
+/* Consistent grid layout for both sections */
 .courses-grid {
     display: grid;
-    grid-template-columns: repeat(5, 1fr); /* 5 items per row */
+    grid-template-columns: repeat(5, 1fr);
     gap: 10px;
 }
 
 .course-item {
     display: flex;
     flex-direction: column;
-    justify-content: space-between; /* Ensure space between sections */
-    border: 1px solid #0f766e; /* Square border */
+    justify-content: space-between;
+    border: 1px solid #0f766e;
     border-radius: 8px;
     background-color: #f9f9f9;
     transition: transform 0.2s;
-    cursor: pointer; /* Indicates it's clickable */
+    cursor: pointer;
     padding: 10px;
-    width: 100%; /* Ensure the item takes full width of the grid cell */
-    height: 200px; /* Set a fixed height (adjust as needed) */
-    position: relative; /* To contain absolutely positioned elements */
-    box-sizing: border-box; /* Include padding and border in height/width */
-    overflow: hidden; /* Hide overflow content */
+    width: 100%;
+    height: 200px;
+    position: relative;
+    box-sizing: border-box;
+    overflow: hidden;
 }
 
-/* Title at the top, allow wrapping */
 .course-item h3 {
-    margin: 0; /* Reset margin */
-    font-size: 1.1em; /* Adjust font size */
-    text-align: center; /* Center align the text */
-    flex-shrink: 0; /* Prevent shrinking */
-    overflow: hidden; /* Hide overflow text */
-    text-overflow: ellipsis; /* Add ellipsis for overflow text */
-    white-space: nowrap; /* Prevent wrapping */
+    margin: 0;
+    font-size: 1.1em;
+    text-align: center;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
-/* Price in the middle */
 .course-item .price {
-    font-weight: bold; /* Make price bold */
-    color: #FFA500; /* Orange color for price */
-    display: flex; /* Use flexbox */
-    align-items: center; /* Center vertically */
-    justify-content: center; /* Center horizontally */
-    flex-grow: 1; /* Allow to take available space */
-    text-align: center; /* Ensure text is centered */
+    font-weight: bold;
+    color: #FFA500;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-grow: 1;
+    text-align: center;
 }
 
-/* Instructor at the bottom with avatar on the left */
 .course-item .instructor {
-    display: flex; /* Flexbox for avatar and name alignment */
-    align-items: center; /* Center align avatar and name */
-    margin-top: 5px; /* Spacing between price and instructor */
-    text-align: center; /* Center align the text */
-    color: black; /* Set color to black */
-    font-weight: normal; /* Make text normal weight */
-    overflow: hidden; /* Hide overflow text */
-    text-overflow: ellipsis; /* Add ellipsis for overflow text */
-    white-space: nowrap; /* Prevent wrapping */
+    display: flex;
+    align-items: center;
+    margin-top: 5px;
+    text-align: center;
+    color: black;
+    font-weight: normal;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .instructor-avatar {
-    width: 30px; /* Avatar size */
+    width: 30px;
     height: 30px;
-    border-radius: 50%; /* Round avatar */
-    margin-right: 8px; /* Space between avatar and name */
+    border-radius: 50%;
+    margin-right: 8px;
 }
 
 .course-item:hover {
-    transform: scale(1.05); /* Hover effect */
+    transform: scale(1.05);
 }
 
+/* Pagination styling */
 .pagination {
     margin-top: 20px;
     display: flex;
