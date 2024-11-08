@@ -22,14 +22,20 @@ const lessonSchema = new mongoose.Schema({
     comments: {
         type: [
             {
-                userId: mongoose.Schema.Types.ObjectId,
+                userId:  {
+                    type: mongoose.Schema.Types.ObjectId,
+                    ref: 'Users'
+                },
                 content: String,
                 create_at: Date,
                 reply: [
                     {
-                        userId: mongoose.Schema.Types.ObjectId,
+                        userId: {
+                            type: mongoose.Schema.Types.ObjectId,
+                            ref: 'Users'
+                        },
                         content: String,
-                        create_at: Date
+                        create_at: Date,
                     }
                 ]
             }
