@@ -11,22 +11,23 @@ const ModifyCoursePage = () => {
     const [course, setCourse] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
-    const [lessonDetails, setLessonDetails] = useState({});
+    const [chapterLessons, setChapterLessons] = useState({});
+    const [expandedChapters, setExpandedChapters] = useState({});
     const [selectedLesson, setSelectedLesson] = useState(null);
     const [isLessonModalOpen, setIsLessonModalOpen] = useState(false);
-    const [isAddLessonModalOpen, setIsAddLessonModalOpen] = useState(false);  
+    const [isAddLessonModalOpen, setIsAddLessonModalOpen] = useState(false);
     const [newLessonData, setNewLessonData] = useState({
         title: '',
         description: '',
         type: 'video',
-        url: ''
+        url: '',
+        chapterOrder: null
     });
     const [isAddingChapter, setIsAddingChapter] = useState(false);
     const [newChapterTitle, setNewChapterTitle] = useState('');
-    const location = useLocation();
+    const [lastAddedChapter, setLastAddedChapter] = useState(null);  // Track the last added chapter
     const courseId = '671bb65ea42ed62c0ae36734';
 
-    // Fetch course and lesson details
     useEffect(() => {
         const fetchCourseDetails = async () => {
             const token = localStorage.getItem('token');
@@ -41,79 +42,91 @@ const ModifyCoursePage = () => {
                 const data = await response.json();
                 if (response.ok) {
                     setCourse(data.data);
-                    fetchAllLessonDetails(data.data.chapters);
                 } else {
                     setError(data.message);
                 }
             } catch (error) {
-                setError('Failed to fetch course details.');
+                setError('Không thể lấy thông tin khóa học.');
             } finally {
                 setLoading(false);
             }
         };
 
-        // Fetch lesson details for each lesson
-        const fetchAllLessonDetails = async (chapters) => {
-            const token = localStorage.getItem('token');
-            const lessonData = {};
-            for (const chapter of chapters) {
-                for (const lesson of chapter.content) {
-                    try {
-                        const response = await fetch(`http://localhost:3000/lesson/get-lesson/${courseId}/${lesson.lesson_id}`, {
-                            method: 'GET',
-                            headers: {
-                                'Auth-Token': token,
-                                'Content-Type': 'application/json',
-                            },
-                        });
-                        const lessonDetails = await response.json();
-                        if (response.ok) {
-                            lessonData[lesson.lesson_id] = lessonDetails.data;
-                        }
-                    } catch (error) {
-                        console.error(`Failed to fetch lesson details for lesson ${lesson.lesson_id}:`, error);
-                    }
-                }
-            }
-            setLessonDetails(lessonData);
-        };
-
         fetchCourseDetails();
     }, [courseId]);
 
-    // Open lesson details modal
-    const openLessonModal = (lessonId) => {
-        const lessonData = lessonDetails[lessonId];
+    useEffect(() => {
+        if (lastAddedChapter) {
+            setExpandedChapters((prev) => ({
+                ...prev,
+                [lastAddedChapter]: true,
+            }));
+
+            const chapterElement = document.getElementById(`chapter-${lastAddedChapter}`);
+            if (chapterElement) {
+                chapterElement.scrollIntoView({ behavior: 'smooth' });
+            }
+        }
+    }, [lastAddedChapter]);
+
+    const toggleChapter = async (chapterId, lessonIds) => {
+        setExpandedChapters((prev) => ({
+            ...prev,
+            [chapterId]: !prev[chapterId],
+        }));
+
+        if (!chapterLessons[chapterId]) {
+            try {
+                const token = localStorage.getItem('token');
+                const lessons = {};
+                for (const lessonId of lessonIds) {
+                    const response = await fetch(`http://localhost:3000/lesson/get-lesson/${courseId}/${lessonId}`, {
+                        method: 'GET',
+                        headers: {
+                            'Auth-Token': token,
+                            'Content-Type': 'application/json',
+                        },
+                    });
+                    const lessonData = await response.json();
+                    if (response.ok) {
+                        lessons[lessonData.data._id] = lessonData.data;
+                    }
+                }
+                setChapterLessons((prev) => ({ ...prev, [chapterId]: lessons }));
+            } catch (error) {
+                setError('Không thể tải bài học.');
+            }
+        }
+    };
+
+    const openLessonModal = (chapterId, lessonId) => {
+        const lessonData = chapterLessons[chapterId]?.[lessonId];
         if (lessonData) {
             setSelectedLesson(lessonData);
             setIsLessonModalOpen(true);
         }
     };
 
-    // Close lesson modal
     const closeLessonModal = () => {
         setIsLessonModalOpen(false);
         setSelectedLesson(null);
     };
 
-    // Open Add Lesson modal
-    const openAddLessonModal = (chapterNumber) => {
-        setNewLessonData({
-            ...newLessonData,
-            chapter_number: chapterNumber
-        });
+    const openAddLessonModal = (chapterOrder) => {
+        setNewLessonData({ ...newLessonData, chapterOrder });
         setIsAddLessonModalOpen(true);
     };
 
-    // Close Add Lesson modal
     const closeAddLessonModal = () => {
         setIsAddLessonModalOpen(false);
         setNewLessonData({
             title: '',
             description: '',
             type: 'video',
-            url: ''
+            url: '',
+            chapterOrder: null
         });
+        setError(''); // Reset error message when closing the modal
     };
 
     const addChapter = async () => {
@@ -129,33 +142,33 @@ const ModifyCoursePage = () => {
             });
             const data = await response.json();
             if (response.ok) {
-                // Append the new chapter to the existing chapters in the course
-                setCourse(prevCourse => ({
-                    ...prevCourse,
+                setCourse((prev) => ({
+                    ...prev,
                     chapters: [
-                        ...prevCourse.chapters,
-                        { 
+                        ...prev.chapters,
+                        {
                             chapter_title: data.data.chapter_title,
                             order: data.data.order,
-                            content: [] // Initialize with an empty content array for the new chapter
+                            content: []
                         },
-                    ]
+                    ],
                 }));
-                setNewChapterTitle(''); // Clear the input
-                setIsAddingChapter(false); // Hide input field and button
+                setNewChapterTitle('');
+                setIsAddingChapter(false);
             } else {
                 setError(data.message);
             }
         } catch (error) {
-            setError('Failed to add chapter.');
+            setError('Không thể thêm chương.');
         }
     };
 
-    // Add lesson to course
     const addLesson = async () => {
-        const { title, description, type, url, chapter_number } = newLessonData;
+        const { title, description, type, url, chapterOrder } = newLessonData;
+        
+        // Check if any required field is empty
         if (!title || !description || !url) {
-            setError('Please fill in all fields');
+            setError('Vui lòng điền đầy đủ thông tin.');
             return;
         }
     
@@ -168,7 +181,7 @@ const ModifyCoursePage = () => {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                    chapter_number,
+                    chapter_number: chapterOrder, // Use `chapterOrder` as `chapter_number` here
                     lesson: {
                         course: courseId,
                         title,
@@ -180,51 +193,24 @@ const ModifyCoursePage = () => {
             });
             const data = await response.json();
             if (response.ok) {
-                window.location.reload();
+                // Show success message
+                setError('Thêm bài học thành công!');
+                setTimeout(() => {
+                    window.location.reload(); // Reload page after 0.5s
+                }, 500); 
             } else {
                 setError(data.message);
             }
         } catch (error) {
-            setError('Failed to add lesson.');
+            setError('Không thể thêm bài học.');
         }
     };
-    
 
-    // Get appropriate lesson icon based on lesson type
     const getLessonIcon = (type) => {
         return type === 'video' ? <FaVideo className="lesson-icon" /> : <FaBook className="lesson-icon" />;
     };
 
-    // Render lessons for each chapter
-    const renderLessons = (lessons) => (
-        <ul className="lessons-list">
-            {lessons.map((lesson) => {
-                const lessonData = lessonDetails[lesson.lesson_id]; // Make sure lessonDetails has the new lesson
-                if (!lessonData) {
-                    // If lesson data is not available yet, return loading message
-                    return (
-                        <li key={lesson.lesson_id} className="lesson-item">
-                            <span>Loading lesson...</span>
-                        </li>
-                    );
-                }
-                return (
-                    <li
-                        key={lesson.lesson_id}
-                        className="lesson-item"
-                        onClick={() => openLessonModal(lesson.lesson_id)}
-                    >
-                        {getLessonIcon(lessonData.type)}
-                        <span>{lessonData.title || 'Untitled Lesson'}</span>
-                    </li>
-                );
-            })}
-        </ul>
-    );
-    
-
-    // Show loading state or error message
-    if (loading) return <div>Loading...</div>;
+    if (loading) return <div>Đang tải...</div>;
 
     return (
         <div className="CoursePage">
@@ -235,7 +221,7 @@ const ModifyCoursePage = () => {
                     <p className="course-description">{course.description}</p>
                     {!isAddingChapter ? (
                         <button className="add-chapter-button" onClick={() => setIsAddingChapter(true)}>
-                            Add Chapter
+                            Thêm chương
                         </button>
                     ) : (
                         <div className="add-chapter-form">
@@ -243,24 +229,35 @@ const ModifyCoursePage = () => {
                                 type="text"
                                 value={newChapterTitle}
                                 onChange={(e) => setNewChapterTitle(e.target.value)}
-                                placeholder="Enter chapter title"
+                                placeholder="Nhập tên chương"
                             />
-                            <button onClick={addChapter}>Confirm</button>
+                            <button onClick={addChapter}>Xác nhận</button>
                         </div>
                     )}
                 </div>
-                {course.chapters.map((chapter, index) => (
-                    <div key={index} className="chapter-section">
-                        <h2>{chapter.order}. {chapter.chapter_title}</h2>
-                        {renderLessons(chapter.content)}
+                {course.chapters.map((chapter) => (
+                    <div key={chapter.order} className="chapter-section" id={`chapter-${chapter.order}`}>
+                        <h2>{chapter.order}. {chapter.chapter_title} ({chapter.content.length} bài học)</h2>
+                        <button className="expand-chapter-button" onClick={() => toggleChapter(chapter.order, chapter.content.map(lesson => lesson.lesson_id))}>
+                            {expandedChapters[chapter.order] ? 'Thu gọn' : 'Mở rộng'}
+                        </button>
+                        {expandedChapters[chapter.order] && chapterLessons[chapter.order] && (
+                            <ul className="lessons-list">
+                                {Object.values(chapterLessons[chapter.order] || {}).map((lesson) => (
+                                    <li key={lesson._id} className="lesson-item" onClick={() => openLessonModal(chapter.order, lesson._id)}>
+                                        {getLessonIcon(lesson.type)}
+                                        <span>{lesson.title || 'Untitled Lesson'}</span>
+                                    </li>
+                                ))}
+                            </ul>
+                        )}
                         <button className="add-lesson-button" onClick={() => openAddLessonModal(chapter.order)}>
-                            Add Lesson
+                            Thêm bài học
                         </button>
                     </div>
                 ))}
             </div>
 
-            {/* Lesson Details Modal */}
             {selectedLesson && (
                 <Modal
                     isOpen={isLessonModalOpen}
@@ -295,7 +292,6 @@ const ModifyCoursePage = () => {
                 </Modal>
             )}
 
-            {/* Add Lesson Modal */}
             {isAddLessonModalOpen && (
                 <Modal
                     isOpen={isAddLessonModalOpen}
@@ -304,10 +300,10 @@ const ModifyCoursePage = () => {
                     className="lesson-modal"
                     overlayClassName="lesson-modal-overlay"
                 >
-                    <h2>Add New Lesson</h2>
+                    <h2>Thêm Bài Học</h2>
                     <form>
                         <label>
-                            Title:
+                            Tên bài học:
                             <input
                                 type="text"
                                 value={newLessonData.title}
@@ -315,7 +311,7 @@ const ModifyCoursePage = () => {
                             />
                         </label>
                         <label>
-                            Description:
+                            Mô tả:
                             <input
                                 type="text"
                                 value={newLessonData.description}
@@ -323,13 +319,13 @@ const ModifyCoursePage = () => {
                             />
                         </label>
                         <label>
-                            Type:
+                            Loại bài học:
                             <select
                                 value={newLessonData.type}
                                 onChange={(e) => setNewLessonData({ ...newLessonData, type: e.target.value })}
                             >
                                 <option value="video">Video</option>
-                                <option value="doc">Document</option>
+                                <option value="doc">Tài liệu</option>
                             </select>
                         </label>
                         <label>
@@ -342,10 +338,13 @@ const ModifyCoursePage = () => {
                         </label>
                     </form>
                     {error && <div className="error-message">{error}</div>}
-                    <button onClick={addLesson}>Add Lesson</button>
-                    <button onClick={closeAddLessonModal}>Cancel</button>
+                    <button className="save-button" onClick={addLesson}>Thêm Bài Học</button>
+                    <button onClick={closeAddLessonModal}>Hủy</button>
                 </Modal>
             )}
+
+
+            {error && <div className="error-message">{error}</div>}
         </div>
     );
 };

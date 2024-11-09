@@ -9,6 +9,7 @@ import ProfilePage from './pages/ProfilePage/ProfilePage.jsx';
 import CoursePage from './pages/CoursePage/CoursePage.jsx';
 import LessonPage from './pages/LessonPage/LessonPage.jsx';
 import ModifyCoursePage from './pages/ModifyCoursePage/ModifyCoursePage.jsx';
+import CodeSubmissionPage from './pages/CodeSubmissionPage/CodeSubmissionPage.jsx';
 
 function App() {
   const [count, setCount] = useState(0);
@@ -24,6 +25,7 @@ function App() {
         <Route path="/course/:courseId" element={<CoursePage />} /> 
         <Route path="/lesson/:courseId/:lessonId" element={<LessonPage />} /> {/* Updated route */}
         <Route path="/modify-course/:courseId" element={<ModifyCoursePage />} /> 
+        <Route path="/code-submission" element={<CodeSubmissionPage />} /> 
       </Routes>
     </Router>
   );

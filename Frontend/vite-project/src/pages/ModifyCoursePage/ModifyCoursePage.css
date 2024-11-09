@@ -163,7 +163,7 @@
 }
 
 .lesson-modal button {
-    margin-top: 20px;
+    margin-top: 15px;
     padding: 10px 20px;
     background-color: #4caf50;
     color: white;
@@ -216,3 +216,50 @@
     background-color: #45a049; /* Change the button color on hover */
 }
 
+.expand-chapter-button,
+.add-lesson-button {
+    margin: 10px 0;
+    padding: 8px 16px;
+    background-color: #4caf50;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.expand-chapter-button:hover,
+.add-lesson-button:hover {
+    background-color: #45a049;
+}
+
+/* Add spacing between the "Expand" and "Add Lesson" buttons */
+.chapter-section .expand-chapter-button {
+    display: block;
+    margin-bottom: 15px; /* Adds space below the "Expand" button */
+}
+
+/* Add spacing between "Save Lesson" and "Cancel" buttons in the modal */
+.lesson-modal button {
+    margin-top: 15px; /* Adds space between buttons */
+}
+
+/* Ensure the "Add Lesson" button is on a new line */
+.chapter-section .add-lesson-button {
+    display: block;
+    margin-top: 10px; /* Adds space between "Add Lesson" and the list */
+}
+
+/* Error message styling */
+.error-message {
+    color: red;
+    font-size: 1.2em;
+    text-align: center;
+    margin-top: 10px;
+}
+
+/* Ensures buttons in the modal appear on separate lines */
+.lesson-modal button {
+    width: 100%;
+    margin-top: 10px; /* Adjusts margin to give space between the buttons */
+}
