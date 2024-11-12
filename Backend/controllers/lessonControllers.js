@@ -101,13 +101,17 @@ exports.getCommentsOfLesson = async (req, res) => {
     try {
         // const { role, coursesJoined, id } = req.user;
         const { lessonId } = req.params;
-        const lesson = await Lessons.findById(lessonId);   
+        const lesson = await Lessons.findById(lessonId).populate([
+            { path: 'comments.userId', select: 'fullname avatar' },
+            { path: 'comments.reply.userId', select: 'fullname avatar' }
+        ]);
         if (!lesson) {
             return res.status(404).json({ success: false, message: 'Không tìm thấy bài học' });
         }
         // if (role !== 'admin' && id !== course.instructor.toString() && !coursesJoined.includes(courseId)) {
         //     return res.status(403).json({ success: false, message: 'Bạn không có quyền xem bình luận' });
         // }
+
         res.status(200).json({ success: true, data: lesson.comments });
     }
     catch (error) {
