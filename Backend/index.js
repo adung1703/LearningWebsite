@@ -8,6 +8,7 @@ const courseRoutes = require('./routes/courseRoutes.js');
 const lessonRoutes = require('./routes/lessonRoutes.js');
 const assignmentRoutes = require('./routes/assignmentRoutes.js');
 const submissionRoutes = require('./routes/submissionRoutes.js');
+const progressRoutes = require('./routes/progressRoutes.js');
 
 const DB_URI = 'mongodb+srv://adung1703:Adung_2003@cluster0.klijv.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0';
 const mongoose = require("mongoose");
@@ -33,6 +34,7 @@ app.use('/course', courseRoutes);
 app.use('/lesson', lessonRoutes);
 app.use('/assignment', assignmentRoutes);
 app.use('/submission', submissionRoutes);
+app.use('/progress', progressRoutes);
 
 require('dotenv').config();
 const port = process.env.PORT || 3000;
