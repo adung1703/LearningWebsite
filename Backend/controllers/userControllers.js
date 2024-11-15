@@ -151,8 +151,9 @@ exports.updateUserInfo = [
             }
 
             if (req.file) {
-                // Xóa avatar cũ trên S3 nếu có
-                if (user.avatar && user.avatar.includes('amazonaws.com')) {
+                // Xóa avatar cũ trên S3 nếu có và không phải là avatar mặc định
+                const defaultAvatarUrl = 'https://learningwebsite-1.s3.ap-southeast-1.amazonaws.com/user-avatar/default-user-avatar.png';
+                if (user.avatar && user.avatar !== defaultAvatarUrl && user.avatar.includes('amazonaws.com')) {
                     const oldKey = user.avatar.split('/').slice(-2).join('/');
                     const deleteParams = {
                         Bucket: 'learningwebsite-1',

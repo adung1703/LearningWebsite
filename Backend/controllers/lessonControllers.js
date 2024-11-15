@@ -1,6 +1,12 @@
 const course_progresses = require('../models/course_progresses');
 const Courses = require('../models/courses');
 const Lessons = require('../models/lessons');
+const { S3Client, PutObjectCommand } = require('@aws-sdk/client-s3'); // Import PutObjectCommand
+const { s3Client, region } = require('../configs/s3Config'); // Import cấu hình S3 và region
+const multer = require('multer');
+const fs = require('fs');
+const path = require('path');
+const upload = multer({ dest: 'uploads/' }); // Thư mục tạm thời để lưu file
 
 exports.getAllLessons = async (req, res) => {
     try {
@@ -18,64 +24,94 @@ exports.getAllLessons = async (req, res) => {
     }
 }
 
-exports.addLesson = async (req, res) => {
-    try {
-        let { chapter_number, lesson } = req.body;
-        const { role, id } = req.user;
-        chapter_number = parseInt(chapter_number);
+exports.addLesson = [
+    upload.single('document'), // Middleware để xử lý file upload
+    async (req, res) => {
+        try {
+            let { chapter_number, lesson } = req.body;
+            const { role, id } = req.user;
+            chapter_number = parseInt(chapter_number);
 
-        const course = await Courses.findById(lesson.course);
+            const course = await Courses.findById(lesson.course);
 
-        if (!course) {
-            return res.status(404).json({ success: false, message: 'Không tìm thấy khóa học' });
-        }
-
-        if (role !== 'admin' && id !== course.instructor.toString()) {
-            return res.status(403).json({ success: false, message: 'Bạn không có quyền thêm bài học' });
-        }
-
-        const newLesson = await Lessons.create(lesson);
-
-        let chapter = course.chapters.find(chapter => chapter.order === chapter_number);
-        if (!chapter) {
-            if (chapter_number == course.chapters.length + 1 || chapter_number === course.chapters[course.chapters.length - 1].order + 1) {
-                course.chapters.push({
-                    chapter_title: `Chương ${chapter_number}`,
-                    order: chapter_number,
-                    content: []
-                });
-                chapter = course.chapters[course.chapters.length - 1];
-
-                //Update Progresses
-                const progresses = await course_progresses.find({ courseId: course._id });
-                progresses.forEach(progress => {
-                    progress.progress.push({
-                        chapter_order: chapter_number,
-                        lessons_completed: [],
-                        assignments_completed: [],
-                        status: 'not-started'
-                    });
-                    progress.save();
-                });
+            if (!course) {
+                return res.status(404).json({ success: false, message: 'Không tìm thấy khóa học' });
             }
-            else return res.status(404).json({ success: false, message: 'Không tìm thấy chương, hãy tạo chương mới' });
+
+            if (role !== 'admin' && id !== course.instructor.toString()) {
+                return res.status(403).json({ success: false, message: 'Bạn không có quyền thêm bài học' });
+            }
+
+            // Thêm bài học vào MongoDB trước
+            const newLesson = await Lessons.create(lesson);
+
+            if (lesson.type === 'document' && req.file) {
+                // Lấy _id của bài học để đặt tên file
+                const timestamp = Date.now();
+                const ext = path.extname(req.file.originalname);
+                const filename = `lesson-document/${newLesson._id}-${timestamp}${ext}`;
+
+                // Tải file lên S3
+                const fileContent = fs.readFileSync(req.file.path);
+                const params = {
+                    Bucket: 'learningwebsite-1',
+                    Key: filename,
+                    Body: fileContent,
+                    ContentType: req.file.mimetype
+                };
+
+                const command = new PutObjectCommand(params);
+                await s3Client.send(command);
+                newLesson.url = `https://${params.Bucket}.s3.${region}.amazonaws.com/${params.Key}`;
+
+                // Cập nhật URL của file vào MongoDB
+                await newLesson.save();
+
+                // Xóa file tạm sau khi upload
+                fs.unlinkSync(req.file.path);
+            }
+
+            let chapter = course.chapters.find(chapter => chapter.order === chapter_number);
+            if (!chapter) {
+                if (chapter_number == course.chapters.length + 1 || chapter_number === course.chapters[course.chapters.length - 1].order + 1) {
+                    course.chapters.push({
+                        chapter_title: `Chương ${chapter_number}`,
+                        order: chapter_number,
+                        content: []
+                    });
+                    chapter = course.chapters[course.chapters.length - 1];
+
+                    //Update Progresses
+                    const progresses = await course_progresses.find({ courseId: course._id });
+                    progresses.forEach(progress => {
+                        progress.progress.push({
+                            chapter_order: chapter_number,
+                            lessons_completed: [],
+                            assignments_completed: [],
+                            status: 'not-started'
+                        });
+                        progress.save();
+                    });
+                }
+                else return res.status(404).json({ success: false, message: 'Không tìm thấy chương, hãy tạo chương mới' });
+            }
+
+            chapter.content.push({
+                content_type: 'lesson',
+                lesson_id: newLesson._id.toString(),
+                order: chapter.content.length + 1
+            });
+
+            await course.save();
+            res.status(201).json({ success: true, data: newLesson, message: 'Thêm bài học thành công' });
+        } catch (error) {
+            res.status(500).json({
+                success: false,
+                message: error.message
+            });
         }
-
-        chapter.content.push({
-            content_type: 'lesson',
-            lesson_id: newLesson._id.toString(),
-            order: chapter.content.length + 1
-        });
-
-        await course.save();
-        res.status(201).json({ success: true, data: newLesson, message: 'Thêm bài học thành công' });
-    } catch (error) {
-        res.status(500).json({
-            success: false,
-            message: error.message
-        });
     }
-}
+];
 
 exports.getLesson = async (req, res) => {
     try {

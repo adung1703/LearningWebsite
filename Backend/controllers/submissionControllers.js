@@ -159,7 +159,13 @@ exports.addSubmission = async (req, res) => {
                     if (courseProgress.progress[chapter_order - 1].status === 'not-started') {
                         courseProgress.progress[chapter_order - 1].status = 'in-progress';
                     }
-                    if (courseProgress.progress[chapter_order - 1].lessons_completed.length === courseOfAssignment.chapters[chapter_order - 1].content.filter(content => content.content_type === 'lesson').length) {
+                    if (    
+                        courseProgress.progress[chapter_order - 1].assignments_completed.length 
+                    +   
+                        courseProgress.progress[chapter_order - 1].lessons_completed.length 
+                    === courseOfAssignment.chapters[chapter_order - 1].content.length
+                    ) 
+                    {
                         courseProgress.progress[chapter_order - 1].status = 'completed';
                     }
                 }
@@ -229,7 +235,13 @@ ${answers.next_code}
                     if (courseProgress.progress[chapter_order - 1].status === 'not-started') {
                         courseProgress.progress[chapter_order - 1].status = 'in-progress';
                     }
-                    if (courseProgress.progress[chapter_order - 1].lessons_completed.length === courseOfAssignment.chapters[chapter_order - 1].content.filter(content => content.content_type === 'lesson').length) {
+                    if (    
+                        courseProgress.progress[chapter_order - 1].assignments_completed.length 
+                    +   
+                        courseProgress.progress[chapter_order - 1].lessons_completed.length 
+                    === courseOfAssignment.chapters[chapter_order - 1].content.length
+                    ) 
+                    {
                         courseProgress.progress[chapter_order - 1].status = 'completed';
                     }
                 }
@@ -254,7 +266,13 @@ ${answers.next_code}
                     if (courseProgress.progress[chapter_order - 1].status === 'not-started') {
                         courseProgress.progress[chapter_order - 1].status = 'in-progress';
                     }
-                    if (courseProgress.progress[chapter_order - 1].lessons_completed.length === courseOfAssignment.chapters[chapter_order - 1].content.filter(content => content.content_type === 'lesson').length) {
+                    if (    
+                        courseProgress.progress[chapter_order - 1].assignments_completed.length 
+                    +   
+                        courseProgress.progress[chapter_order - 1].lessons_completed.length 
+                    === courseOfAssignment.chapters[chapter_order - 1].content.length
+                    ) 
+                    {
                         courseProgress.progress[chapter_order - 1].status = 'completed';
                     }
                 }

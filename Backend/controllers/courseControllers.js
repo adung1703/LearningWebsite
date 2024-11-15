@@ -1,6 +1,12 @@
 const Courses = require('../models/courses');
 const Users = require('../models/users');
 const CourseProgresses = require('../models/course_progresses');
+const { S3Client, PutObjectCommand, DeleteObjectCommand } = require('@aws-sdk/client-s3'); // Import PutObjectCommand và DeleteObjectCommand
+const { s3Client, region } = require('../configs/s3Config'); // Import cấu hình S3 và region
+const multer = require('multer');
+const fs = require('fs');
+const path = require('path');
+const upload = multer({ dest: 'uploads/' }); // Thư mục tạm thời để lưu file
 
 exports.getCourses = async (req, res) => {
     try {
@@ -99,47 +105,131 @@ exports.getCourseDetail = async (req, res) => {
     }
 }
 
-exports.addCourse = async (req, res) => {
-    try {
-        const { role } = req.user;
-        if (role !== 'admin' && role !== 'instructor') {
-            return res.status(403).json({ success: false, message: 'Bạn không có quyền thêm khóa học' });
+exports.addCourse = [
+    upload.single('image'), // Middleware để xử lý file upload
+    async (req, res) => {
+        try {
+            const { role } = req.user;
+            if (role !== 'admin' && role !== 'instructor') {
+                return res.status(403).json({ success: false, message: 'Bạn không có quyền thêm khóa học' });
+            }
+
+            const { title, description, price, instructor } = req.body;
+
+            // Thêm khóa học vào MongoDB trước để lấy courseId
+            const course = new Courses({
+                title,
+                description,
+                price,
+                instructor
+            });
+
+            await course.save();
+
+            let imageUrl = `https://${params.Bucket}.s3.${region}.amazonaws.com/course-image/default-course-image.png`;
+
+            if (req.file) {
+                // Tạo tên file theo template chung với courseId
+                const timestamp = Date.now();
+                const ext = path.extname(req.file.originalname);
+                const filename = `course-image/${course._id}-${timestamp}${ext}`;
+
+                // Tải file lên S3
+                const fileContent = fs.readFileSync(req.file.path);
+                const params = {
+                    Bucket: 'learningwebsite-1',
+                    Key: filename,
+                    Body: fileContent,
+                    ContentType: req.file.mimetype
+                };
+
+                const command = new PutObjectCommand(params);
+                await s3Client.send(command);
+                imageUrl = `https://${params.Bucket}.s3.${region}.amazonaws.com/${params.Key}`;
+
+                // Xóa file tạm sau khi upload
+                fs.unlinkSync(req.file.path);
+            }
+
+            // Cập nhật URL của ảnh vào MongoDB
+            course.image = imageUrl;
+            await course.save();
+
+            res.status(201).json({ success: true, data: course, message: 'Thêm khóa học thành công' });
+        } catch (error) {
+            res.status(500).json({
+                success: false,
+                message: error.message
+            });
         }
-        const course = await Courses.create(req.body);
-        course.instructor = req.user.id;
-        await course.save();
-        res.status(201).json({ success: true, data: course, message: 'Thêm khóa học thành công' });
-    } catch (error) {
-        res.status(500).json({
-            success: false,
-            message: error.message
-        });
     }
-}
+];
 
-exports.updateCourse = async (req, res) => {
-    try {
-        const { courseId } = req.params;
-        const course = await Courses.findById(courseId);
-        if (!course) {
-            return res.status(404).json({ success: false, message: 'Không tìm thấy khóa học' });
+exports.updateCourse = [
+    upload.single('image'), // Middleware để xử lý file upload
+    async (req, res) => {
+        try {
+            const { courseId } = req.params;
+            const course = await Courses.findById(courseId);
+            if (!course) {
+                return res.status(404).json({ success: false, message: 'Không tìm thấy khóa học' });
+            }
+
+            const { role, id } = req.user;
+            if (role !== 'admin' && course.instructor.toString() !== id) {
+                return res.status(403).json({ success: false, message: 'Bạn không có quyền cập nhật khóa học này' });
+            }
+
+            const { title, description, price } = req.body;
+
+            if (req.file) {
+                // Xóa ảnh cũ nếu có
+                if (course.image && course.image.includes('course-image/')) {
+                    const oldKey = course.image.split('/').slice(-2).join('/');
+                    const deleteParams = {
+                        Bucket: 'learningwebsite-1',
+                        Key: oldKey
+                    };
+                    const deleteCommand = new DeleteObjectCommand(deleteParams);
+                    await s3Client.send(deleteCommand);
+                }
+
+                // Tạo tên file theo template chung với courseId
+                const timestamp = Date.now();
+                const ext = path.extname(req.file.originalname);
+                const filename = `course-image/${course._id}-${timestamp}${ext}`;
+
+                // Tải file lên S3
+                const fileContent = fs.readFileSync(req.file.path);
+                const params = {
+                    Bucket: 'learningwebsite-1',
+                    Key: filename,
+                    Body: fileContent,
+                    ContentType: req.file.mimetype
+                };
+
+                const command = new PutObjectCommand(params);
+                await s3Client.send(command);
+                course.image = `https://${params.Bucket}.s3.${region}.amazonaws.com/${params.Key}`;
+
+                // Xóa file tạm sau khi upload
+                fs.unlinkSync(req.file.path);
+            }
+
+            course.title = title || course.title;
+            course.description = description || course.description;
+            course.price = price || course.price;
+
+            await course.save();
+            res.status(200).json({ success: true, message: 'Cập nhật khóa học thành công', data: course });
+        } catch (error) {
+            res.status(500).json({
+                success: false,
+                message: error.message
+            });
         }
-
-        const { role, id } = req.user;
-        if (role !== 'admin' && course.instructor.toString() !== id) {
-            return res.status(403).json({ success: false, message: 'Bạn không có quyền cập nhật khóa học' });
-        }
-
-        const updatedCourse = req.body;
-        await Courses.findByIdAndUpdate(courseId, updatedCourse);
-        res.status(200).json({ success: true, message: 'Cập nhật khóa học thành công' });
-    } catch (error) {
-        res.status(500).json({
-            success: false,
-            message: error.message
-        });
     }
-};
+];
 
 exports.deleteCourse = async (req, res) => {
     try {

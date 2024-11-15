@@ -28,7 +28,7 @@ const userSchema = new mongoose.Schema({
     },
     avatar: {
         type: String,
-        default: 'https://learningwebsite-1.s3.ap-southeast-1.amazonaws.com/user-avatar/default.png'
+        default: 'https://learningwebsite-1.s3.ap-southeast-1.amazonaws.com/user-avatar/default-user-avatar.png'
     }, 
     coursesJoined: {
         type: [mongoose.Schema.Types.ObjectId],
