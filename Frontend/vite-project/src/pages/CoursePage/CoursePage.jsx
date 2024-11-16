@@ -1,21 +1,19 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useParams } from 'react-router-dom';
 import Navbar from '../../components/Navbar/Navbar';
 import './CoursePage.css';
 import { FaBook, FaVideo, FaQuestionCircle } from 'react-icons/fa';
 
 const CoursePage = () => {
+    const { courseId } = useParams();
     const [course, setCourse] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     const location = useLocation();
 
-    // Store lesson details
     const [lessonDetails, setLessonDetails] = useState({});
-
-    // Replace with your actual course ID
-    const courseId = '671bb65ea42ed62c0ae36734';
-
+    const [courseProgress, setCourseProgress] = useState({});
+    
     useEffect(() => {
         const fetchCourseDetails = async () => {
             const token = localStorage.getItem('token');
@@ -50,24 +48,27 @@ const CoursePage = () => {
             const token = localStorage.getItem('token');
             if (course && course.chapters) {
                 for (const chapter of course.chapters) {
-                    for (const lesson of chapter.content) {
-                        try {
-                            const response = await fetch(`http://localhost:3000/lesson/get-lesson/${courseId}/${lesson.lesson_id}`, {
-                                method: 'GET',
-                                headers: {
-                                    'Auth-Token': `${token}`,
-                                    'Content-Type': 'application/json',
-                                },
-                            });
-                            const lessonData = await response.json();
-                            if (response.ok) {
-                                setLessonDetails(prev => ({
-                                    ...prev,
-                                    [lesson.lesson_id]: lessonData.data,
-                                }));
+                    for (const content of chapter.content) {
+                        if (content.content_type === 'lesson') {
+                            try {
+                                const response = await fetch(`http://localhost:3000/lesson/get-lesson/${courseId}/${content.lesson_id}`, {
+                                    method: 'GET',
+                                    headers: {
+                                        'Auth-Token': `${token}`,
+                                        'Content-Type': 'application/json',
+                                    },
+                                });
+                                const lessonData = await response.json();
+                                if (response.ok) {
+                                    // Store lesson data including the type (video or document)
+                                    setLessonDetails(prev => ({
+                                        ...prev,
+                                        [content.lesson_id]: lessonData.data,
+                                    }));
+                                }
+                            } catch (error) {
+                                console.error(`Failed to fetch lesson details for lesson ${content.lesson_id}:`, error);
                             }
-                        } catch (error) {
-                            console.error(`Failed to fetch lesson details for lesson ${lesson.lesson_id}:`, error);
                         }
                     }
                 }
@@ -75,9 +76,47 @@ const CoursePage = () => {
         };
 
         fetchLessonDetails();
-    }, [course]);
+    }, [course, courseId]);
 
-    // Scroll to the specific lesson after loading
+    useEffect(() => {
+        const fetchCourseProgress = async () => {
+            const token = localStorage.getItem('token');
+            try {
+                const response = await fetch(`http://localhost:3000/progress/get-course-progress/${courseId}`, {
+                    method: 'GET',
+                    headers: {
+                        'Auth-Token': `${token}`,
+                        'Content-Type': 'application/json',
+                    },
+                });
+
+                const progressData = await response.json();
+
+                if (response.ok) {
+                    // Create an object with lesson IDs as keys and completed status as values
+                    const progressStatus = {};
+                    progressData.data.progress.forEach(progress => {
+                        progress.lessons_completed.forEach(lessonId => {
+                            progressStatus[lessonId] = true; // Mark as completed
+                        });
+                        progress.assignments_completed.forEach(assignmentId => {
+                            progressStatus[assignmentId] = true; // Mark assignment as completed
+                        });
+                    });
+                    setCourseProgress(progressStatus);
+                } else {
+                    console.error(progressData.message);
+                }
+            } catch (error) {
+                console.error('Error fetching course progress:', error);
+            }
+        };
+
+        if (courseId) {
+            fetchCourseProgress();
+        }
+    }, [courseId, course]);
+
     useEffect(() => {
         const queryParams = new URLSearchParams(location.search);
         const lessonIdToScrollTo = queryParams.get('lessonId');
@@ -94,45 +133,43 @@ const CoursePage = () => {
     const calculateCompletionPercentage = () => {
         if (!course || !course.chapters) return 0;
 
-        const totalLessons = course.chapters.reduce((total, chapter) => total + chapter.content.length, 0);
-        const completedLessons = course.chapters.reduce(
-            (total, chapter) => total + chapter.content.filter(lesson => lesson.completed).length, 
+        const totalContent = course.chapters.reduce((total, chapter) => total + chapter.content.length, 0);
+        const completedContent = course.chapters.reduce(
+            (total, chapter) => total + chapter.content.filter(content => content.completed || courseProgress[content.lesson_id] || courseProgress[content.assignment_id]).length, 
             0
         );
-        return Math.round((completedLessons / totalLessons) * 100);
+        return Math.round((completedContent / totalContent) * 100);
     };
 
-    const toggleLessonCompletion = (chapterIndex, lessonIndex) => {
-        const updatedChapters = [...course.chapters];
-        updatedChapters[chapterIndex].content[lessonIndex].completed = 
-            !updatedChapters[chapterIndex].content[lessonIndex].completed;
-        setCourse({ ...course, chapters: updatedChapters });
-    };
-
-    const getLessonIcon = (type) => {
+    const getIconForType = (type) => {
         switch (type) {
             case 'video': return <FaVideo className="lesson-icon" />;
-            case 'doc': return <FaBook className="lesson-icon" />;
-            case 'quiz': return <FaQuestionCircle className="lesson-icon" />;
+            case 'document': return <FaBook className="lesson-icon" />;
+            case 'assignment': return <FaQuestionCircle className="lesson-icon" />;
             default: return null;
         }
     };
 
-    const renderLessons = (lessons, chapterIndex) => (
+    const renderContent = (content, chapterIndex) => (
         <ul className="lessons-list">
-            {lessons.map((lesson, lessonIndex) => {
-                const lessonData = lessonDetails[lesson.lesson_id] || {};
+            {content.map((item, index) => {
+                const contentData = item.content_type === 'lesson' ? lessonDetails[item.lesson_id] : null;
+                const lessonType = contentData ? contentData.type : null;
+                const isCompleted = item.completed || courseProgress[item.lesson_id] || courseProgress[item.assignment_id];
                 return (
                     <li 
-                        key={lesson.lesson_id} // Use lesson_id as the key
-                        id={lesson.lesson_id} // Set id to the lesson_id for scrolling
-                        className={`lesson-item ${lesson.completed ? 'completed' : 'uncompleted'}`}
-                        //onClick={() => toggleLessonCompletion(chapterIndex, lessonIndex)}
+                        key={item._id}
+                        id={item._id} 
+                        className={`lesson-item ${isCompleted ? 'completed' : 'uncompleted'}`}
                     >
-                        <Link to={`/lesson/${courseId}/${lesson.lesson_id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
-                            {getLessonIcon(lessonData.type)}
-                            <span>{lessonData.title || `Lesson ${lessonIndex + 1}`}</span>
-                            {lesson.completed && <span className="check-circle">&#10003;</span>}
+                        <Link to={item.content_type === 'assignment' 
+                            ? `/assignment/${courseId}/${item.assignment_id}` 
+                            : `/lesson/${courseId}/${item.lesson_id}`} 
+                            style={{ textDecoration: 'none', color: 'inherit' }}>
+                            
+                            {getIconForType(lessonType || item.content_type)} {/* Use the lesson type for icon */}
+                            <span>{item.content_type === 'assignment' ? 'Bài tập' : contentData ? contentData.title : `Lesson ${index + 1}`}</span>
+                            {isCompleted && <span className="check-circle">&#10003;</span>}
                         </Link>
                     </li>
                 );
@@ -163,7 +200,7 @@ const CoursePage = () => {
                 {course.chapters.map((chapter, index) => (
                     <div key={index} className="chapter-section">
                         <h2>{chapter.order}. {chapter.chapter_title}</h2>
-                        {renderLessons(chapter.content, index)}
+                        {renderContent(chapter.content, index)}
                     </div>
                 ))}
             </div>
@@ -172,4 +209,3 @@ const CoursePage = () => {
 };
 
 export default CoursePage;
-

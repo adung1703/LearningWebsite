@@ -87,14 +87,14 @@ const CommentsSection = ({ lessonId }) => {
                 body: JSON.stringify({
                     lessonId: lessonId,
                     commentId: commentId,
-                    content: replyContent[commentId], // The reply content from the state
+                    content: replyContent[commentId],
                 }),
             });
             const data = await response.json();
 
             if (response.ok) {
-                setReplyContent((prev) => ({ ...prev, [commentId]: '' })); // Clear reply input
-                fetchComments();  // Refresh comments after adding reply
+                setReplyContent((prev) => ({ ...prev, [commentId]: '' }));
+                fetchComments();
             } else {
                 setError(data.message);
             }
@@ -103,11 +103,10 @@ const CommentsSection = ({ lessonId }) => {
         }
     };
 
-    // Function to format the date to d/m/yyyy + time
     const formatDate = (dateString) => {
         const date = new Date(dateString);
         const options = { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false };
-        return date.toLocaleString('vi-VN', options).replace(',', ''); // Remove comma before time
+        return date.toLocaleString('vi-VN', options).replace(',', '');
     };
 
     return (
@@ -130,15 +129,14 @@ const CommentsSection = ({ lessonId }) => {
                 comments.map((comment) => (
                     <div key={comment._id} className="comment">
                         <div className="comment-header">
-                            <img src="/placeholder-avatar.png" alt="Hình đại diện người dùng" className="avatar" />
+                            <img src={comment.userId.avatar} alt="Hình đại diện người dùng" className="avatar" />
                             <div className="comment-body">
-                                <p><strong>Người dùng {comment.userId}</strong></p>
+                                <p><strong>{comment.userId.fullname}</strong></p>
                                 <p className="comment-content">{comment.content}</p>
-                                <p className="comment-date">Đăng vào: {formatDate(comment.create_at)}</p> {/* Moved date here */}
+                                <p className="comment-date">Đăng vào: {formatDate(comment.create_at)}</p>
                             </div>
                         </div>
-                        
-                        {/* Reply Input Section */}
+
                         <div className="add-reply">
                             <textarea
                                 placeholder="Viết phản hồi..."
@@ -155,11 +153,11 @@ const CommentsSection = ({ lessonId }) => {
                                 {comment.reply.map((reply) => (
                                     <div key={reply._id} className="reply">
                                         <div className="reply-header">
-                                            <img src="/placeholder-avatar.png" alt="Hình đại diện người dùng" className="avatar" />
+                                            <img src={reply.userId.avatar} alt="Hình đại diện người dùng" className="avatar" />
                                             <div className="reply-body"> 
-                                                <p><strong>Người dùng {reply.userId}</strong></p>
+                                                <p><strong>{reply.userId.fullname}</strong></p>
                                                 <p className="reply-content">{reply.content}</p>
-                                                <p className="reply-date">Phản hồi vào: {formatDate(reply.create_at)}</p> {/* Added date here for replies */}
+                                                <p className="reply-date">Phản hồi vào: {formatDate(reply.create_at)}</p>
                                             </div>
                                         </div>
                                     </div>
