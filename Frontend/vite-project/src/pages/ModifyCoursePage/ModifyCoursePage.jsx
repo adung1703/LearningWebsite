@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useParams } from 'react-router-dom';
 import Navbar from '../../components/Navbar/Navbar';
 import './ModifyCoursePage.css';
-import { FaBook, FaVideo } from 'react-icons/fa';
+import { FaBook, FaQuestionCircle, FaVideo } from 'react-icons/fa';
 import Modal from 'react-modal';
 
 Modal.setAppElement('#root');
 
 const ModifyCoursePage = () => {
+    const { courseId } = useParams(); 
     const [course, setCourse] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
@@ -26,7 +27,7 @@ const ModifyCoursePage = () => {
     const [isAddingChapter, setIsAddingChapter] = useState(false);
     const [newChapterTitle, setNewChapterTitle] = useState('');
     const [lastAddedChapter, setLastAddedChapter] = useState(null);  // Track the last added chapter
-    const courseId = '671bb65ea42ed62c0ae36734';
+    const [pdfFile, setPdfFile] = useState(null);
 
     useEffect(() => {
         const fetchCourseDetails = async () => {
@@ -69,48 +70,40 @@ const ModifyCoursePage = () => {
         }
     }, [lastAddedChapter]);
 
-    const toggleChapter = async (chapterId, lessonIds) => {
+    const toggleChapter = async (chapterId, contentItems) => {
         setExpandedChapters((prev) => ({
             ...prev,
             [chapterId]: !prev[chapterId],
         }));
-
+    
         if (!chapterLessons[chapterId]) {
             try {
                 const token = localStorage.getItem('token');
                 const lessons = {};
-                for (const lessonId of lessonIds) {
-                    const response = await fetch(`http://localhost:3000/lesson/get-lesson/${courseId}/${lessonId}`, {
-                        method: 'GET',
-                        headers: {
-                            'Auth-Token': token,
-                            'Content-Type': 'application/json',
-                        },
-                    });
-                    const lessonData = await response.json();
+                for (const content of contentItems) {
+                    const response = content.content_type === 'lesson'
+                        ? await fetch(`http://localhost:3000/lesson/get-lesson/${courseId}/${content.lesson_id}`, {
+                            method: 'GET',
+                            headers: {
+                                'Auth-Token': token,
+                                'Content-Type': 'application/json',
+                            },
+                        })
+                        : { ok: true, json: async () => ({ data: { _id: content.assignment_id, title: 'Bài tập', type: 'assignment' } }) };
+    
+                    const data = await response.json();
                     if (response.ok) {
-                        lessons[lessonData.data._id] = lessonData.data;
+                        lessons[content.content_type === 'lesson' ? data.data._id : content.assignment_id] = data.data;
                     }
                 }
                 setChapterLessons((prev) => ({ ...prev, [chapterId]: lessons }));
             } catch (error) {
-                setError('Không thể tải bài học.');
+                setError('Không thể tải bài học hoặc bài tập.');
             }
         }
     };
+    
 
-    const openLessonModal = (chapterId, lessonId) => {
-        const lessonData = chapterLessons[chapterId]?.[lessonId];
-        if (lessonData) {
-            setSelectedLesson(lessonData);
-            setIsLessonModalOpen(true);
-        }
-    };
-
-    const closeLessonModal = () => {
-        setIsLessonModalOpen(false);
-        setSelectedLesson(null);
-    };
 
     const openAddLessonModal = (chapterOrder) => {
         setNewLessonData({ ...newLessonData, chapterOrder });
@@ -163,9 +156,46 @@ const ModifyCoursePage = () => {
         }
     };
 
+    const handlePdfFileChange = (e) => {
+        setPdfFile(e.target.files[0]); // Update state with selected file
+    };
+    
+    const uploadFileToCloudinary = async (file) => {
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('upload_preset', 'public');
+        try {
+            const response = await fetch('https://api.cloudinary.com/v1_1/dwhavspcm/upload', {
+                method: 'POST',
+                body: formData,
+            });
+            
+            const data = await response.json();
+            
+            if (data.secure_url) {
+                return data.secure_url; // Return the file URL from Cloudinary
+            } else {
+                throw new Error('File upload failed');
+            }
+        } catch (error) {
+            setError('Không thể tải lên tài liệu.');
+            throw error;
+        }
+    };
+    
     const addLesson = async () => {
-        const { title, description, type, url, chapterOrder } = newLessonData;
-        
+        const { title, description, type, chapterOrder } = newLessonData;
+        let url = newLessonData.url; // Default URL for video
+    
+        // If lesson type is "document" and a PDF file is selected, upload it
+        if (type === 'document' && pdfFile) {
+            try {
+                url = await uploadFileToCloudinary(pdfFile); // Upload PDF and get URL
+            } catch (error) {
+                return; // Return early if upload fails
+            }
+        }
+    
         // Check if any required field is empty
         if (!title || !description || !url) {
             setError('Vui lòng điền đầy đủ thông tin.');
@@ -207,8 +237,14 @@ const ModifyCoursePage = () => {
     };
 
     const getLessonIcon = (type) => {
-        return type === 'video' ? <FaVideo className="lesson-icon" /> : <FaBook className="lesson-icon" />;
+        if (type === 'video') {
+            return <FaVideo className="lesson-icon" />;
+        } else if (type === 'assignment') {
+            return <FaQuestionCircle className="assignment-icon" />; // Using a question mark for assignment
+        }
+        return <FaBook className="lesson-icon" />;
     };
+    
 
     if (loading) return <div>Đang tải...</div>;
 
@@ -238,18 +274,20 @@ const ModifyCoursePage = () => {
                 {course.chapters.map((chapter) => (
                     <div key={chapter.order} className="chapter-section" id={`chapter-${chapter.order}`}>
                         <h2>{chapter.order}. {chapter.chapter_title} ({chapter.content.length} bài học)</h2>
-                        <button className="expand-chapter-button" onClick={() => toggleChapter(chapter.order, chapter.content.map(lesson => lesson.lesson_id))}>
+                        <button className="expand-chapter-button" onClick={() => toggleChapter(chapter.order, chapter.content)}>
                             {expandedChapters[chapter.order] ? 'Thu gọn' : 'Mở rộng'}
                         </button>
+
                         {expandedChapters[chapter.order] && chapterLessons[chapter.order] && (
                             <ul className="lessons-list">
-                                {Object.values(chapterLessons[chapter.order] || {}).map((lesson) => (
-                                    <li key={lesson._id} className="lesson-item" onClick={() => openLessonModal(chapter.order, lesson._id)}>
-                                        {getLessonIcon(lesson.type)}
-                                        <span>{lesson.title || 'Untitled Lesson'}</span>
-                                    </li>
-                                ))}
-                            </ul>
+                            {Object.values(chapterLessons[chapter.order] || {}).map((content) => (
+                                <li key={content._id} className="lesson-item" >
+                                    {getLessonIcon(content.type)}
+                                    <span>{content.title || 'Untitled'}</span>
+                                </li>
+                            ))}
+                        </ul>
+                        
                         )}
                         <button className="add-lesson-button" onClick={() => openAddLessonModal(chapter.order)}>
                             Thêm bài học
@@ -258,39 +296,6 @@ const ModifyCoursePage = () => {
                 ))}
             </div>
 
-            {selectedLesson && (
-                <Modal
-                    isOpen={isLessonModalOpen}
-                    onRequestClose={closeLessonModal}
-                    contentLabel="Lesson Details"
-                    className="lesson-modal"
-                    overlayClassName="lesson-modal-overlay"
-                >
-                    <h2>Lesson Details</h2>
-                    <form>
-                        <label>
-                            Title:
-                            <input type="text" value={selectedLesson.title} readOnly />
-                        </label>
-                        <label>
-                            Description:
-                            <input type="text" value={selectedLesson.description || ''} readOnly />
-                        </label>
-                        <label>
-                            Type:
-                            <select value={selectedLesson.type} disabled>
-                                <option value="video">Video</option>
-                                <option value="doc">Document</option>
-                            </select>
-                        </label>
-                        <label>
-                            URL:
-                            <input type="text" value={selectedLesson.url || ''} readOnly />
-                        </label>
-                    </form>
-                    <button onClick={closeLessonModal}>Close</button>
-                </Modal>
-            )}
 
             {isAddLessonModalOpen && (
                 <Modal
@@ -325,9 +330,19 @@ const ModifyCoursePage = () => {
                                 onChange={(e) => setNewLessonData({ ...newLessonData, type: e.target.value })}
                             >
                                 <option value="video">Video</option>
-                                <option value="doc">Tài liệu</option>
+                                <option value="document">Tài liệu</option>
                             </select>
                         </label>
+                        {newLessonData.type === 'document' && (
+                            <label>
+                                Tải lên tài liệu (PDF):
+                                <input
+                                    type="file"
+                                    accept="application/pdf"
+                                    onChange={handlePdfFileChange}
+                                />
+                            </label>
+                        )}
                         <label>
                             URL:
                             <input
@@ -350,3 +365,4 @@ const ModifyCoursePage = () => {
 };
 
 export default ModifyCoursePage;
+

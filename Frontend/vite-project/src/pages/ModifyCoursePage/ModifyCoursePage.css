@@ -60,7 +60,8 @@
 
 .lesson-item {
     display: flex;
-    align-items: center; /* Center items vertically */
+    align-items: center;
+    justify-content: flex-start; /* Ensures left alignment */
     padding: 10px;
     margin-bottom: 5px;
     background-color: #f0f0f0;
@@ -70,6 +71,7 @@
     margin: 0 auto 5px auto;
 }
 
+
 .lesson-item.completed {
     background-color: #e0ffe0; /* Background color for completed lessons */
 }
@@ -78,13 +80,13 @@
     background-color: #d3d3d3; /* Background color for uncompleted lessons */
 }
 
-.lesson-icon {
+.lesson-icon, .assignment-icon {
     margin-right: 10px; /* Space between icon and lesson name */
     font-size: 18px;
 }
 
 .lesson-name {
-    flex-grow: 1; /* Allows the name to take up available space */
+    flex-grow: 0; /* Allows the name to take up available space */
     text-align: left; /* Aligns text to the left */
 }
 
