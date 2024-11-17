@@ -9,6 +9,7 @@ import ProfilePage from './pages/ProfilePage/ProfilePage.jsx';
 import CoursePage from './pages/CoursePage/CoursePage.jsx';
 import LessonPage from './pages/LessonPage/LessonPage.jsx';
 import ModifyCoursePage from './pages/ModifyCoursePage/ModifyCoursePage.jsx';
+import AddAssignmentPage from './pages/AddAssignmentPage/AddAssignmentPage.jsx';
 import CodeSubmissionPage from './pages/CodeSubmissionPage/CodeSubmissionPage.jsx';
 
 function App() {
@@ -25,6 +26,7 @@ function App() {
         <Route path="/course/:courseId" element={<CoursePage />} /> 
         <Route path="/lesson/:courseId/:lessonId" element={<LessonPage />} /> {/* Updated route */}
         <Route path="/modify-course/:courseId" element={<ModifyCoursePage />} /> 
+        <Route path="/add-assignment/:courseId/:chapterId" element={<AddAssignmentPage />} /> 
         <Route path="/code-submission" element={<CodeSubmissionPage />} /> 
       </Routes>
     </Router>

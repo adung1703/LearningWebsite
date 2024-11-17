@@ -70,3 +70,9 @@
     color: #ccc; /* Light text color */
     cursor: not-allowed; /* Change cursor to indicate it's unclickable */
 }
+
+.next-lesson-section button.mark-complete.completed {
+    background-color: #4caf50; /* Green color to indicate completion */
+    cursor: not-allowed;
+    border-color: #4caf50;
+}

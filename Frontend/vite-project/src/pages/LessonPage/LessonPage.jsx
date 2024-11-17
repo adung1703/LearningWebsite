@@ -11,13 +11,15 @@ const LessonPage = () => {
     const [nextLesson, setNextLesson] = useState(null);
     const [chapterTitle, setChapterTitle] = useState('');
     const [chapterOrder, setChapterOrder] = useState('');
+    const [progress, setProgress] = useState(null);
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(true);
-    
+    const [isCompleted, setIsCompleted] = useState(false); // To track completion status
+
+    // Fetching the data
     useEffect(() => {
         const fetchLessonDetails = async () => {
             const token = localStorage.getItem('token'); 
-            
             try {
                 const response = await fetch(`http://localhost:3000/lesson/get-lesson/${courseId}/${lessonId}`, {
                     method: 'GET',
@@ -27,7 +29,6 @@ const LessonPage = () => {
                     },
                 });
                 const data = await response.json();
-
                 if (response.ok) {
                     setLesson(data.data);
                 } else {
@@ -40,7 +41,6 @@ const LessonPage = () => {
 
         const fetchCourseDetails = async () => {
             const token = localStorage.getItem('token'); 
-            
             try {
                 const response = await fetch(`http://localhost:3000/course/get-detail/${courseId}`, {
                     method: 'GET',
@@ -50,7 +50,6 @@ const LessonPage = () => {
                     },
                 });
                 const data = await response.json();
-
                 if (response.ok) {
                     setCourse(data.data);
                     const chapter = data.data.chapters.find(chap => 
@@ -68,14 +67,61 @@ const LessonPage = () => {
                 }
             } catch (error) {
                 setError('Failed to fetch course details.');
-            } finally {
-                setLoading(false);
             }
         };
 
-        fetchLessonDetails();
-        fetchCourseDetails();
-    }, [courseId, lessonId]);
+        const fetchProgressDetails = async () => {
+            const token = localStorage.getItem('token'); 
+            try {
+                const response = await fetch(`http://localhost:3000/progress/get-course-progress/${courseId}`, {
+                    method: 'GET',
+                    headers: {
+                        'Auth-Token': `${token}`,
+                        'Content-Type': 'application/json',
+                    },
+                });
+                const data = await response.json();
+                if (response.ok) {
+                    setProgress(data.data);
+                    const completed = data.data.progress.some(chapter => 
+                        chapter.chapter_order === chapterOrder && chapter.lessons_completed.includes(lessonId)
+                    );
+                    setIsCompleted(completed); // Set completion status
+                } else {
+                    setError(data.message);
+                }
+            } catch (error) {
+                setError('Failed to fetch course progress.');
+            }
+        };
+
+        // Execute all fetching functions simultaneously
+        Promise.all([fetchLessonDetails(), fetchCourseDetails(), fetchProgressDetails()])
+            .finally(() => setLoading(false));
+
+    }, [courseId, lessonId, chapterOrder]);
+
+    // Handle Mark Complete Button Click
+    const handleMarkComplete = async () => {
+        const token = localStorage.getItem('token');
+        try {
+            const response = await fetch(`http://localhost:3000/progress/complete-lesson/${courseId}/${lessonId}`, {
+                method: 'PUT',
+                headers: {
+                    'Auth-Token': `${token}`,
+                    'Content-Type': 'application/json',
+                },
+            });
+            const data = await response.json();
+            if (response.ok) {
+                setIsCompleted(true); // Set completion status to true
+            } else {
+                setError(data.message);
+            }
+        } catch (error) {
+            setError('Failed to mark lesson as complete.');
+        }
+    };
 
     if (loading) return <div>Loading...</div>;
     if (error) return <div>Error: {error}</div>;
@@ -106,7 +152,13 @@ const LessonPage = () => {
                 <Link to={`/course/${courseId}?lessonId=${lessonId}`}>
                     <button>View Course</button>
                 </Link>
-                <button className="mark-complete">Mark Complete</button>
+                <button
+                    className={`mark-complete ${isCompleted ? 'completed' : ''}`}
+                    onClick={!isCompleted ? handleMarkComplete : null}
+                    disabled={isCompleted}
+                >
+                    {isCompleted ? 'Completed' : 'Mark Complete'}
+                </button>
                 {nextLesson ? (
                     <Link to={`/lesson/${courseId}/${nextLesson}`}>
                         <button>Next Lesson</button>

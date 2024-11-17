@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useLocation, useParams } from 'react-router-dom';
+import { useLocation, useParams, useNavigate } from 'react-router-dom';
 import Navbar from '../../components/Navbar/Navbar';
 import './ModifyCoursePage.css';
 import { FaBook, FaQuestionCircle, FaVideo } from 'react-icons/fa';
@@ -9,6 +9,7 @@ Modal.setAppElement('#root');
 
 const ModifyCoursePage = () => {
     const { courseId } = useParams(); 
+    const navigate = useNavigate();
     const [course, setCourse] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
@@ -291,6 +292,9 @@ const ModifyCoursePage = () => {
                         )}
                         <button className="add-lesson-button" onClick={() => openAddLessonModal(chapter.order)}>
                             Thêm bài học
+                        </button>
+                        <button className="add-lesson-button" onClick={() => navigate(`/add-assignment/${courseId}/${chapter.order}`)}>
+                            Thêm bài tập
                         </button>
                     </div>
                 ))}
