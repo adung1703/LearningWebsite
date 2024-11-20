@@ -13,6 +13,7 @@ const answerSchema = new mongoose.Schema({
     pre_code: {
         type: String
     },
+    // code mẫu
     next_code: {
         type: String
     },
