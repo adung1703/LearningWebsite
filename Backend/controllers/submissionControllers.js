@@ -93,13 +93,35 @@ async function runTests(language, version, publicTestCases, privateTestcases, us
     return result;
 }
 
-function addChapterProgress() {
-
-} 
-
-function updateProgress() {
-    
+function addChapterProgress(courseProgress, chapter_order) {
+    let progress_num = courseProgress.progress.length;
+    while (progress_num < chapter_order) {
+        courseProgress.progress.push({
+            chapter_order: progress_num,
+            assignments_completed: [],
+            status: 'in-progress'
+        });
+        progress_num++;
+    }
+    courseProgress.save();
 }
+
+function updateProgress(courseProgress, chapter_order, assignmentId, courseOfAssignment) {
+    if (courseProgress.progress[chapter_order - 1].assignments_completed.indexOf(assignmentId) === -1) {
+        courseProgress.progress[chapter_order - 1].assignments_completed.push(assignmentId);
+    }
+    if (courseProgress.progress[chapter_order - 1].status === 'not-started') {
+        courseProgress.progress[chapter_order - 1].status = 'in-progress';
+    }
+    if (
+        courseProgress.progress[chapter_order - 1].assignments_completed.length +
+        courseProgress.progress[chapter_order - 1].lessons_completed.length ===
+        courseOfAssignment.chapters[chapter_order - 1].content.length
+    ) {
+        courseProgress.progress[chapter_order - 1].status = 'completed';
+    }
+}
+
 exports.addSubmission = async (req, res) => {
     try {
         console.log(req.body);
@@ -217,37 +239,8 @@ exports.addSubmission = async (req, res) => {
             // Trên 7/10 điểm thì hoàn thành bài tập
 
             if (dec_score >= 7) {
-                let progress_num = courseProgress.progress.length;
-                 
-                while (progress_num < chapter_order) {
-                    courseProgress.progress.push({
-                        chapter_order: progress_num,
-                        assignments_completed: [],
-                        status: 'in-progress'
-                    });
-                    progress_num++;
-                }
-                courseProgress.save();
-                console.log("Progress: " + courseProgress.progress);
-                if (courseProgress.progress[chapter_order - 1].assignments_completed.indexOf(assignmentId) === -1) {
-                    courseProgress.progress[chapter_order - 1].assignments_completed.push(assignmentId);
-                    console.log(1);
-                }
-                if (courseProgress.progress[chapter_order - 1].status === 'not-started') {
-                    courseProgress.progress[chapter_order - 1].status = 'in-progress';
-                    console.log(2);
-                }
-                if (    
-                    courseProgress.progress[chapter_order - 1].assignments_completed.length 
-                +   
-                    courseProgress.progress[chapter_order - 1].lessons_completed.length 
-                === courseOfAssignment.chapters[chapter_order - 1].content.length
-                ) 
-                {
-                    console.log(3);
-                    courseProgress.progress[chapter_order - 1].status = 'completed';
-                }
-                console.log(4);
+                addChapterProgress(courseProgress, chapter_order);
+                updateProgress(courseProgress, chapter_order, assignmentId, courseOfAssignment);
                 return res.status(200).json({ success: true, data: resSubmission });
             }
         } else if (assignment.type === 'code') {
@@ -275,33 +268,9 @@ ${answers.next_code}
                     score: result.score
                 });
                 if (!existedSubmission.highest_score || result.score > existedSubmission.highest_score) existedSubmission.highest_score = result.score;
-                let progress_num = courseProgress.progress.length;
-                 
-                while (progress_num < chapter_order) {
-                    courseProgress.progress.push({
-                        chapter_order: progress_num,
-                        assignments_completed: [],
-                        status: 'in-progress'
-                    });
-                    progress_num++;
-                }
-                courseProgress.save();
+                addChapterProgress(courseProgress, chapter_order);
                 if (result.score >= 7) {
-                    if (courseProgress.progress[chapter_order - 1].assignments_completed.indexOf(assignmentId) === -1) {
-                        courseProgress.progress[chapter_order - 1].assignments_completed.push(assignmentId);
-                    }
-                    if (courseProgress.progress[chapter_order - 1].status === 'not-started') {
-                        courseProgress.progress[chapter_order - 1].status = 'in-progress';
-                    }
-                    if (    
-                        courseProgress.progress[chapter_order - 1].assignments_completed.length 
-                    +   
-                        courseProgress.progress[chapter_order - 1].lessons_completed.length 
-                    === courseOfAssignment.chapters[chapter_order - 1].content.length
-                    ) 
-                    {
-                        courseProgress.progress[chapter_order - 1].status = 'completed';
-                    }
+                    updateProgress(courseProgress, chapter_order, assignmentId, courseOfAssignment);
                 }
                 await existedSubmission.save();
                 return res.status(200).json({ success: true, data: existedSubmission });
@@ -317,33 +286,9 @@ ${answers.next_code}
                     }],
                     highest_score: result.score
                 });
-                let progress_num = courseProgress.progress.length;
-                 
-                while (progress_num < chapter_order) {
-                    courseProgress.progress.push({
-                        chapter_order: progress_num,
-                        assignments_completed: [],
-                        status: 'in-progress'
-                    });
-                    progress_num++;
-                }
-                courseProgress.save();
+                addChapterProgress(courseProgress, chapter_order);
                 if (result.score >= 7) {
-                    if (courseProgress.progress[chapter_order - 1].assignments_completed.indexOf(assignmentId) === -1) {
-                        courseProgress.progress[chapter_order - 1].assignments_completed.push(assignmentId);
-                    }
-                    if (courseProgress.progress[chapter_order - 1].status === 'not-started') {
-                        courseProgress.progress[chapter_order - 1].status = 'in-progress';
-                    }
-                    if (    
-                        courseProgress.progress[chapter_order - 1].assignments_completed.length 
-                    +   
-                        courseProgress.progress[chapter_order - 1].lessons_completed.length 
-                    === courseOfAssignment.chapters[chapter_order - 1].content.length
-                    ) 
-                    {
-                        courseProgress.progress[chapter_order - 1].status = 'completed';
-                    }
+                    updateProgress(courseProgress, chapter_order, assignmentId, courseOfAssignment);
                 }
                 newSubmission.save();
                 return res.status(201).json({ success: true, data: newSubmission });
@@ -353,4 +298,3 @@ ${answers.next_code}
         res.status(500).json({ success: false, message: error.message });
     }
 }
-
