@@ -49,7 +49,7 @@ exports.loginUser = async (req, res) => {
 
         // Tạo token JWT
 
-        const token = jwt.sign({ 
+        const token = jwt.sign({
                     id: user._id, 
                     username: user.username, 
                     fullname: user.fullname, 

@@ -93,8 +93,16 @@ async function runTests(language, version, publicTestCases, privateTestcases, us
     return result;
 }
 
+function addChapterProgress() {
+
+} 
+
+function updateProgress() {
+    
+}
 exports.addSubmission = async (req, res) => {
     try {
+        console.log(req.body);
         const { id } = req.user;
         const { assignmentId } = req.body;
         const assignment = await Assignments.findById(assignmentId);
@@ -116,21 +124,46 @@ exports.addSubmission = async (req, res) => {
                 })
             });
         }
-        const chapter_order = courseOfAssignment.chapters.find(chapter => chapter.content.find(content => content.assignment_id.toString() === assignmentId.toString())).order;
+        
+        let chapter_order = -1;
+
+        for (const chapter of courseOfAssignment.chapters) {
+            const hasAssignment = chapter.content.some(
+                content => content.assignment_id && content.assignment_id.toString() === assignmentId
+            );
+            if (hasAssignment) {
+                chapter_order = chapter.order; // Trả về thứ tự của chương
+                break;
+            }
+        }
+
+        console.log("Chapter Order: " + chapter_order);
 
         if (!assignment) {
             return res.status(404).json({ success: false, message: 'Không tìm thấy bài tập tương ứng' });
-        }
+        } 
+
+        console.log("Type: " + assignment.type);
 
         if (assignment.type === 'quiz' || assignment.type === 'fill') {
             
+            let resSubmission = null;
             const answers = await Answers.findById(assignment.answers);
+            console.log('Answer: ' + answers);
             const { submission_content } = req.body;
 
             const existedSubmission = await Submissions.findOne({ assignmentId: assignmentId, userId: id });
+            
+            let score = 0;
+            for (let i = 0; i < submission_content.length; i++) {
+                if (answers.answer_content[i] === submission_content[i]) score++;
+            }
+
+            let dec_score = score/answers.answer_content.length*10.0;
+            
             if (existedSubmission) {
-                if (existedSubmission.submit_count > 10) return res.status(400).json({ success: false, message: 'Bạn đã nộp bài quá 10 lần' });
-                let score = 0;
+                if (existedSubmission.submit_count > 10) 
+                    return res.status(400).json({ success: false, message: 'Bạn đã nộp bài quá 10 lần' });
 
                 existedSubmission.submit_count++;
                 if (!answers) {
@@ -139,41 +172,20 @@ exports.addSubmission = async (req, res) => {
                     });
                     return res.status(200).json({ success: true, message: 'Đã nộp bài nhưng chưa có đáp án, hãy chờ thầy giáo chấm!' });
                 }
-                for (let i = 0; i < submission_content.length; i++) {
-                    if (answers.answer_content[i] === submission_content[i]) score++;
-                }
-
-                let dec_score = score/answers.answer_content.length*10.0;
-
-                if (!existedSubmission.highest_score || dec_score > existedSubmission.highest_score) existedSubmission.highest_score = score;  
+                
+                if (!existedSubmission.highest_score || dec_score > existedSubmission.highest_score) 
+                    existedSubmission.highest_score = dec_score;  
 
                 existedSubmission.submission_detail.push({
                     content: submission_content, 
                     score: dec_score
                 });
-                // Trên 7/10 điểm thì hoàn thành bài tập
-                if (dec_score >= 7) {
-                    if (courseProgress.progress[chapter_order - 1].assignments_completed.indexOf(assignmentId) === -1) {
-                        courseProgress.progress[chapter_order - 1].assignments_completed.push(assignmentId);
-                    }
-                    if (courseProgress.progress[chapter_order - 1].status === 'not-started') {
-                        courseProgress.progress[chapter_order - 1].status = 'in-progress';
-                    }
-                    if (    
-                        courseProgress.progress[chapter_order - 1].assignments_completed.length 
-                    +   
-                        courseProgress.progress[chapter_order - 1].lessons_completed.length 
-                    === courseOfAssignment.chapters[chapter_order - 1].content.length
-                    ) 
-                    {
-                        courseProgress.progress[chapter_order - 1].status = 'completed';
-                    }
-                }
+                console.log("Submission Detail: " + existedSubmission.submission_detail);
 
                 await existedSubmission.save();
-                return res.status(200).json({ success: true, data: existedSubmission });
+
+                resSubmission = existedSubmission;
             } else {
-                let score = 0;
                 if (!answers) {
                     const newSubmission = await Submissions.create({
                         assignmentId,
@@ -184,12 +196,11 @@ exports.addSubmission = async (req, res) => {
                         }]
                     });
                     newSubmission.save();
-                    return res.status(201).json({ success: true, data: newSubmission });
+                    return res.status(200).json({ 
+                        success: true, message: 'Đã nộp bài nhưng chưa có đáp án, hãy chờ thầy giáo chấm!' 
+                    });
                 }
-                for (let i = 0; i < submission_content.length; i++) {
-                    if (answers.answer_content[i] === submission_content[i]) score++;
-                }
-                let dec_score = score/answers.answer_content.length*10.0;
+
                 const newSubmission = await Submissions.create({
                     assignmentId,
                     userId: id,
@@ -201,7 +212,43 @@ exports.addSubmission = async (req, res) => {
                     highest_score: dec_score
                 });
                 newSubmission.save();
-                return res.status(201).json({ success: true, data: newSubmission });
+                resSubmission = newSubmission;
+            }
+            // Trên 7/10 điểm thì hoàn thành bài tập
+
+            if (dec_score >= 7) {
+                let progress_num = courseProgress.progress.length;
+                 
+                while (progress_num < chapter_order) {
+                    courseProgress.progress.push({
+                        chapter_order: progress_num,
+                        assignments_completed: [],
+                        status: 'in-progress'
+                    });
+                    progress_num++;
+                }
+                courseProgress.save();
+                console.log("Progress: " + courseProgress.progress);
+                if (courseProgress.progress[chapter_order - 1].assignments_completed.indexOf(assignmentId) === -1) {
+                    courseProgress.progress[chapter_order - 1].assignments_completed.push(assignmentId);
+                    console.log(1);
+                }
+                if (courseProgress.progress[chapter_order - 1].status === 'not-started') {
+                    courseProgress.progress[chapter_order - 1].status = 'in-progress';
+                    console.log(2);
+                }
+                if (    
+                    courseProgress.progress[chapter_order - 1].assignments_completed.length 
+                +   
+                    courseProgress.progress[chapter_order - 1].lessons_completed.length 
+                === courseOfAssignment.chapters[chapter_order - 1].content.length
+                ) 
+                {
+                    console.log(3);
+                    courseProgress.progress[chapter_order - 1].status = 'completed';
+                }
+                console.log(4);
+                return res.status(200).json({ success: true, data: resSubmission });
             }
         } else if (assignment.type === 'code') {
             const answers = await Answers.findById(assignment.answers);
@@ -220,7 +267,7 @@ ${answers.next_code}
             console.log(result);
             const existedSubmission = await Submissions.findOne({ assignmentId: assignmentId, userId: id });
             if (existedSubmission) {
-                if (existedSubmission.submit_count > 20) return res.status(400).json({ success: false, message: 'Bạn đã nộp bài quá 10 lần' });
+                if (existedSubmission.submit_count > 20) return res.status(400).json({ success: false, message: 'Bạn đã nộp bài quá 20 lần' });
                 existedSubmission.submit_count++;
                 existedSubmission.submission_detail.push({
                     content: submission_content,
@@ -228,6 +275,17 @@ ${answers.next_code}
                     score: result.score
                 });
                 if (!existedSubmission.highest_score || result.score > existedSubmission.highest_score) existedSubmission.highest_score = result.score;
+                let progress_num = courseProgress.progress.length;
+                 
+                while (progress_num < chapter_order) {
+                    courseProgress.progress.push({
+                        chapter_order: progress_num,
+                        assignments_completed: [],
+                        status: 'in-progress'
+                    });
+                    progress_num++;
+                }
+                courseProgress.save();
                 if (result.score >= 7) {
                     if (courseProgress.progress[chapter_order - 1].assignments_completed.indexOf(assignmentId) === -1) {
                         courseProgress.progress[chapter_order - 1].assignments_completed.push(assignmentId);
@@ -259,6 +317,17 @@ ${answers.next_code}
                     }],
                     highest_score: result.score
                 });
+                let progress_num = courseProgress.progress.length;
+                 
+                while (progress_num < chapter_order) {
+                    courseProgress.progress.push({
+                        chapter_order: progress_num,
+                        assignments_completed: [],
+                        status: 'in-progress'
+                    });
+                    progress_num++;
+                }
+                courseProgress.save();
                 if (result.score >= 7) {
                     if (courseProgress.progress[chapter_order - 1].assignments_completed.indexOf(assignmentId) === -1) {
                         courseProgress.progress[chapter_order - 1].assignments_completed.push(assignmentId);
