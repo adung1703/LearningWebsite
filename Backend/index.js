@@ -10,7 +10,7 @@ const lessonRoutes = require('./routes/lessonRoutes.js');
 const assignmentRoutes = require('./routes/assignmentRoutes.js');
 const submissionRoutes = require('./routes/submissionRoutes.js');
 const progressRoutes = require('./routes/progressRoutes.js');
-const s3 = require('./configs/s3Config.js');
+const s3 = require('./config/s3Config.js');
 
 const DB_URI = 'mongodb+srv://adung1703:Adung_2003@cluster0.klijv.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0';
 const mongoose = require("mongoose");
