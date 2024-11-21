@@ -169,7 +169,7 @@ exports.addSubmission = async (req, res) => {
 
         if (assignment.type === 'quiz' || assignment.type === 'fill') {
             
-            let resSubmission = null;
+            let resSubmission = {};
             const answers = await Answers.findById(assignment.answers);
             console.log('Answer: ' + answers);
             const { submission_content } = req.body;
@@ -205,8 +205,10 @@ exports.addSubmission = async (req, res) => {
                 console.log("Submission Detail: " + existedSubmission.submission_detail);
 
                 await existedSubmission.save();
+                console.log(1);
 
                 resSubmission = existedSubmission;
+                console.log("existedSubmission: "+ resSubmission);
             } else {
                 if (!answers) {
                     const newSubmission = await Submissions.create({
@@ -235,14 +237,16 @@ exports.addSubmission = async (req, res) => {
                 });
                 newSubmission.save();
                 resSubmission = newSubmission;
+                
             }
             // Trên 7/10 điểm thì hoàn thành bài tập
 
             if (dec_score >= 7) {
                 addChapterProgress(courseProgress, chapter_order);
                 updateProgress(courseProgress, chapter_order, assignmentId, courseOfAssignment);
-                return res.status(200).json({ success: true, data: resSubmission });
             }
+            console.log("Submission: "+ resSubmission);
+            return res.status(200).json({ success: true, data: resSubmission });
         } else if (assignment.type === 'code') {
             const answers = await Answers.findById(assignment.answers);
             const { submission_content } = req.body;
