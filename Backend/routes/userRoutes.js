@@ -1,11 +1,12 @@
 const express = require('express'); 
 const router = express.Router();
-const {registerUser, loginUser, getUserInfo, joinCourse} = require('../controllers/userControllers.js');
+const userControllers = require('../controllers/userControllers.js');
 const auth = require('../middlewares/authMiddleware.js');
 
-router.post('/register', registerUser);
-router.post('/login', loginUser);
-router.get('/user-info', auth, getUserInfo);
-router.put('/join-course', auth, joinCourse);
+router.post('/register', userControllers.registerUser);
+router.post('/login', userControllers.loginUser);
+router.get('/user-info', auth, userControllers.getUserInfo);
+router.put('/join-course', auth, userControllers.joinCourse);
+router.put('/update-user-info', auth, userControllers.updateUserInfo);
 
 module.exports = router;
