@@ -14,7 +14,7 @@ const assignmentSchema = new mongoose.Schema(
             type: String
         },
         type: {
-            type: String, // quiz/assignment/fill
+            type: String, // quiz/assignment/fill/plaintext/file-upload
             required: true
         },
         url: {
