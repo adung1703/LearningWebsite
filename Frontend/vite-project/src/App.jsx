@@ -11,6 +11,7 @@ import LessonPage from './pages/LessonPage/LessonPage.jsx';
 import ModifyCoursePage from './pages/ModifyCoursePage/ModifyCoursePage.jsx';
 import AddAssignmentPage from './pages/AddAssignmentPage/AddAssignmentPage.jsx';
 import CodeSubmissionPage from './pages/CodeSubmissionPage/CodeSubmissionPage.jsx';
+import QuizAssignment from './pages/QuizAsssignmentPage/QuizAssignment.jsx';
 
 function App() {
   const [count, setCount] = useState(0);
@@ -28,6 +29,7 @@ function App() {
         <Route path="/modify-course/:courseId" element={<ModifyCoursePage />} /> 
         <Route path="/add-assignment/:courseId/:chapterId" element={<AddAssignmentPage />} /> 
         <Route path="/code-submission" element={<CodeSubmissionPage />} /> 
+        <Route path="/assignment/:courseId/:assignmentId" element={<QuizAssignment />} />
       </Routes>
     </Router>
   );

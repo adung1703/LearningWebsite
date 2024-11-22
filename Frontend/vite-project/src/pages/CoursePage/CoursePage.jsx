@@ -13,7 +13,7 @@ const CoursePage = () => {
 
     const [lessonDetails, setLessonDetails] = useState({});
     const [courseProgress, setCourseProgress] = useState({});
-    
+
     useEffect(() => {
         const fetchCourseDetails = async () => {
             const token = localStorage.getItem('token');
@@ -135,7 +135,7 @@ const CoursePage = () => {
 
         const totalContent = course.chapters.reduce((total, chapter) => total + chapter.content.length, 0);
         const completedContent = course.chapters.reduce(
-            (total, chapter) => total + chapter.content.filter(content => content.completed || courseProgress[content.lesson_id] || courseProgress[content.assignment_id]).length, 
+            (total, chapter) => total + chapter.content.filter(content => content.completed || courseProgress[content.lesson_id] || courseProgress[content.assignment_id]).length,
             0
         );
         return Math.round((completedContent / totalContent) * 100);
@@ -156,17 +156,22 @@ const CoursePage = () => {
                 const contentData = item.content_type === 'lesson' ? lessonDetails[item.lesson_id] : null;
                 const lessonType = contentData ? contentData.type : null;
                 const isCompleted = item.completed || courseProgress[item.lesson_id] || courseProgress[item.assignment_id];
+                const dataState = {
+                    chapterIndex,
+                    itemIndex: index
+                };
                 return (
-                    <li 
+                    <li
                         key={item._id}
-                        id={item._id} 
+                        id={item._id}
                         className={`lesson-item ${isCompleted ? 'completed' : 'uncompleted'}`}
                     >
-                        <Link to={item.content_type === 'assignment' 
-                            ? `/assignment/${courseId}/${item.assignment_id}` 
-                            : `/lesson/${courseId}/${item.lesson_id}`} 
-                            style={{ textDecoration: 'none', color: 'inherit' }}>
-                            
+                        <Link to={item.content_type === 'assignment'
+                            ? `/assignment/${courseId}/${item.assignment_id}`
+                            : `/lesson/${courseId}/${item.lesson_id}`}
+                            style={{ textDecoration: 'none', color: 'inherit' }}
+                            state={dataState}>
+
                             {getIconForType(lessonType || item.content_type)} {/* Use the lesson type for icon */}
                             <span>{item.content_type === 'assignment' ? 'Bài tập' : contentData ? contentData.title : `Lesson ${index + 1}`}</span>
                             {isCompleted && <span className="check-circle">&#10003;</span>}
@@ -186,23 +191,25 @@ const CoursePage = () => {
         <div className='CoursePage'>
             <Navbar />
             <div className="course-content">
-                <div className="course-header">
-                    <h1>{course.title}</h1>
-                    <p className="course-description">{course.description}</p>
-                    <div className="progress-bar">
-                        <div 
-                            className="progress-bar-fill" 
-                            style={{ width: `${completionPercentage}%` }}
-                        ></div>
+                <div className='content-container'>
+                    <div className="course-header">
+                        <h1>{course.title}</h1>
+                        <p className="course-description">{course.description}</p>
+                        <div className="progress-bar">
+                            <div
+                                className="progress-bar-fill"
+                                style={{ width: `${completionPercentage}%` }}
+                            ></div>
+                        </div>
+                        <p>{completionPercentage}% complete</p>
                     </div>
-                    <p>{completionPercentage}% complete</p>
+                    {course.chapters.map((chapter, index) => (
+                        <div key={index} className="chapter-section">
+                            <h2>{chapter.order}. {chapter.chapter_title}</h2>
+                            {renderContent(chapter.content, index)}
+                        </div>
+                    ))}
                 </div>
-                {course.chapters.map((chapter, index) => (
-                    <div key={index} className="chapter-section">
-                        <h2>{chapter.order}. {chapter.chapter_title}</h2>
-                        {renderContent(chapter.content, index)}
-                    </div>
-                ))}
             </div>
         </div>
     );
