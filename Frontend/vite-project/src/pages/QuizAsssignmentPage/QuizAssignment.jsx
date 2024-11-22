@@ -76,10 +76,16 @@ const QuizAssignment = () => {
         fetchAssignment();
     }, [assignmentId]);
 
-    const handleOptionChange = (index, option) => {
+    const mapOptionToLetter = (optionIndex) => {
+        const letters = ['a', 'b', 'c', 'd'];
+        return letters[optionIndex];
+    };
+
+    const handleOptionChange = (index, optionIndex) => {
         const newAnswers = [...answers];
-        newAnswers[index] = option;
+        newAnswers[index] = mapOptionToLetter(optionIndex);
         setAnswers(newAnswers);
+        console.log('Answers:', answers);
     };
 
     const handleSubmit = async () => {
@@ -123,8 +129,7 @@ const QuizAssignment = () => {
             alert('Nộp bài thành công!');
             console.log('Submission response:', response.data);
         } catch (error) {
-            console.error('Error submitting quiz:', error);
-            alert('Error submitting quiz:', error);
+            alert(error.response.data.message);
         }
 
     };
@@ -171,7 +176,7 @@ const QuizAssignment = () => {
                                                     value={option}
                                                     className="mr-2"
                                                     required
-                                                    onChange={() => handleOptionChange(index, option)}
+                                                    onChange={() => handleOptionChange(index, optionIndex)}
                                                 />
                                                 <label htmlFor={`q${index}o${optionIndex}`} className="text-gray-700">
                                                     {option}

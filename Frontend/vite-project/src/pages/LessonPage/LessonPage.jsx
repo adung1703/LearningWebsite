@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useParams, Link } from 'react-router-dom'; 
+import { useParams, Link, useLocation } from 'react-router-dom'; 
 import Navbar from '../../components/Navbar/Navbar';
 import CommentsSection from '../../components/CommentsSection/CommentsSection'; // Import CommentsSection component
 import './LessonPage.css'; 
@@ -15,6 +15,8 @@ const LessonPage = () => {
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(true);
     const [isCompleted, setIsCompleted] = useState(false); // To track completion status
+    const location = useLocation();
+    const dataState = location.state;
 
     // Fetching the data
     useEffect(() => {
@@ -96,8 +98,14 @@ const LessonPage = () => {
         };
 
         // Execute all fetching functions simultaneously
-        Promise.all([fetchLessonDetails(), fetchCourseDetails(), fetchProgressDetails()])
+        if (dataState?.detail) {
+            setLesson(dataState.detail);
+            Promise.all([fetchCourseDetails(), fetchProgressDetails()])
             .finally(() => setLoading(false));
+        } else {
+            Promise.all([fetchLessonDetails(), fetchCourseDetails(), fetchProgressDetails()])
+            .finally(() => setLoading(false));
+        }
 
     }, [courseId, lessonId, chapterOrder]);
 

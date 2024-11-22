@@ -2,7 +2,6 @@
     display: flex;
     flex-direction: column;
     align-items: center; /* Center aligns the content */
-    padding-top: 100px; /* Adjust this value based on your navbar height */
     min-height: 100vh; /* Ensure it takes full height */
     background-color: #f9f9f9; /* Optional: background color for better contrast */
 }

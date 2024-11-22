@@ -3,6 +3,7 @@ import { Link, useLocation, useParams } from 'react-router-dom';
 import Navbar from '../../components/Navbar/Navbar';
 import './CoursePage.css';
 import { FaBook, FaVideo, FaQuestionCircle } from 'react-icons/fa';
+import axios from 'axios';
 
 const CoursePage = () => {
     const { courseId } = useParams();
@@ -150,6 +151,53 @@ const CoursePage = () => {
         }
     };
 
+    const fetchAssignment = async (item, dataState, link) => {
+        try {
+            const response = await axios.get(`http://localhost:3000/assignment/get-assignment/${item.assignment_id}`,
+                {
+                    method: 'GET',
+                    headers: {
+                        'Auth-Token': `${token}`,
+                        'Content-Type': 'application/json',
+                    }
+                }
+            );
+            if (response.data.success) {
+                if (response.data.data.type === 'quiz') 
+                {
+                    link = `/assignment/${courseId}/${item.assignment_id}`;
+                } else if (response.data.data.type === 'code') 
+                {
+                    link = `/code-submission/${courseId}/${item.assignment_id}`;
+                } else if (response.data.data.type === 'fill') 
+                {
+                    link = `/fill-assignment/${courseId}/${item.assignment_id}`;
+                }
+                dataState.detail = response.data.data;
+            }
+        } catch (error) {
+            console.error('Error fetching assignment:', error);
+        }
+    };
+
+    useEffect(() => {
+        if (course && course.chapters) {
+            course.chapters.forEach((chapter, chapterIndex) => {
+                chapter.content.forEach((item, index) => {
+                    if (item.content_type !== 'lesson') {
+                        const dataState = {
+                            chapterIndex,
+                            itemIndex: index,
+                            detail: null
+                        };
+                        let link;
+                        fetchAssignment(item, dataState, link);
+                    }
+                });
+            });
+        }
+    }, [course]);
+
     const renderContent = (content, chapterIndex) => (
         <ul className="lessons-list">
             {content.map((item, index) => {
@@ -158,8 +206,16 @@ const CoursePage = () => {
                 const isCompleted = item.completed || courseProgress[item.lesson_id] || courseProgress[item.assignment_id];
                 const dataState = {
                     chapterIndex,
-                    itemIndex: index
+                    itemIndex: index,
+                    detail: null
                 };
+
+                let link;
+
+                if (item.content_type === 'lesson') {
+                    link = `/lesson/${courseId}/${item.lesson_id}`;
+                }
+
                 return (
                     <li
                         key={item._id}
