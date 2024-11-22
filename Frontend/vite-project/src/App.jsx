@@ -1,35 +1,38 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import React, { useState } from 'react';
+import ReactDOM from 'react-dom/client';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import SignIn from './components/SignIn';
+import SignUp from './components/SignUp';
+import Home from './pages/Homepage/Homepage.jsx';
+import Dashboard from './pages/Dashboard/Dashboard.jsx';
+import ProfilePage from './pages/ProfilePage/ProfilePage.jsx';
+import CoursePage from './pages/CoursePage/CoursePage.jsx';
+import LessonPage from './pages/LessonPage/LessonPage.jsx';
+import ModifyCoursePage from './pages/ModifyCoursePage/ModifyCoursePage.jsx';
+import AddAssignmentPage from './pages/AddAssignmentPage/AddAssignmentPage.jsx';
+import CodeSubmissionPage from './pages/CodeSubmissionPage/CodeSubmissionPage.jsx';
+import QuizAssignment from './pages/QuizAsssignmentPage/QuizAssignment.jsx';
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [count, setCount] = useState(0);
 
   return (
-    <>
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    <Router>
+      <Routes>
+        <Route path="/" element={<SignIn />} />
+        <Route path="/sign-in" element={<SignIn />} />
+        <Route path="/sign-up" element={<SignUp />} />
+        <Route path="/dashboard" element={<Dashboard />} /> 
+        <Route path="/profile" element={<ProfilePage />} /> 
+        <Route path="/course/:courseId" element={<CoursePage />} /> 
+        <Route path="/lesson/:courseId/:lessonId" element={<LessonPage />} /> {/* Updated route */}
+        <Route path="/modify-course/:courseId" element={<ModifyCoursePage />} /> 
+        <Route path="/add-assignment/:courseId/:chapterId" element={<AddAssignmentPage />} /> 
+        <Route path="/code-submission" element={<CodeSubmissionPage />} /> 
+        <Route path="/assignment/:courseId/:assignmentId" element={<QuizAssignment />} />
+      </Routes>
+    </Router>
+  );
 }
 
-export default App
+export default App;
