@@ -302,3 +302,21 @@ ${answers.next_code}
         res.status(500).json({ success: false, message: error.message });
     }
 }
+
+exports.getSubmission = async (req, res) => {
+    try {
+        const { id } = req.user;
+        const { assignmentId } = req.params;
+        const submission = await Submissions
+            .findOne({ assignmentId, userId: id })
+        if (!submission) {
+            return res.status(404).json({ success: false, message: 'Không tìm thấy bài nộp tương ứng' });
+        }
+        else {
+            return res.status(200).json({ success: true, data: submission });
+        }
+    }
+    catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+}
