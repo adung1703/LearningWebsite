@@ -126,7 +126,7 @@ const QuizAssignment = () => {
                 setAssignmentState('Chưa hoàn thành');
             }
 
-            alert('Nộp bài thành công!');
+            alert('Nộp bài thành công!\n' + 'Điểm của bạn là: ' + response.data.data.submission_detail[response.data.data.submission_detail.length - 1].score);
             console.log('Submission response:', response.data);
         } catch (error) {
             alert(error.response.data.message);

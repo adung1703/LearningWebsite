@@ -29,7 +29,7 @@ function App() {
         <Route path="/modify-course/:courseId" element={<ModifyCoursePage />} /> 
         <Route path="/add-assignment/:courseId/:chapterId" element={<AddAssignmentPage />} /> 
         <Route path="/code-submission/:courseId/:assignmentId" element={<CodeSubmissionPage />} /> 
-        <Route path="/assignment/:courseId/:assignmentId" element={<QuizAssignment />} />
+        <Route path="/quiz-assignment/:courseId/:assignmentId" element={<QuizAssignment />} />
       </Routes>
     </Router>
   );

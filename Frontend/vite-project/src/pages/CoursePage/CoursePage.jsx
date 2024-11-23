@@ -14,11 +14,11 @@ const CoursePage = () => {
 
     const [lessonDetails, setLessonDetails] = useState({});
     const [courseProgress, setCourseProgress] = useState({});
+    const [link, setLink] = useState('');
+    const token = localStorage.getItem('token');
 
     useEffect(() => {
         const fetchCourseDetails = async () => {
-            const token = localStorage.getItem('token');
-
             try {
                 const response = await fetch(`http://localhost:3000/course/get-detail/${courseId}`, {
                     method: 'GET',
@@ -46,7 +46,6 @@ const CoursePage = () => {
 
     useEffect(() => {
         const fetchLessonDetails = async () => {
-            const token = localStorage.getItem('token');
             if (course && course.chapters) {
                 for (const chapter of course.chapters) {
                     for (const content of chapter.content) {
@@ -81,7 +80,6 @@ const CoursePage = () => {
 
     useEffect(() => {
         const fetchCourseProgress = async () => {
-            const token = localStorage.getItem('token');
             try {
                 const response = await fetch(`http://localhost:3000/progress/get-course-progress/${courseId}`, {
                     method: 'GET',
@@ -151,52 +149,35 @@ const CoursePage = () => {
         }
     };
 
-    const fetchAssignment = async (item, dataState, link) => {
+    const getLinkforAssignment = async (assignment_id) => {
         try {
-            const response = await axios.get(`http://localhost:3000/assignment/get-assignment/${item.assignment_id}`,
-                {
-                    method: 'GET',
-                    headers: {
-                        'Auth-Token': `${token}`,
-                        'Content-Type': 'application/json',
-                    }
-                }
-            );
+            const response = await axios.get(`http://localhost:3000/assignment/get-assignment/${assignment_id}`, {
+                headers: {
+                    'Auth-Token': `${token}`,
+                    'Content-Type': 'application/json',
+                },
+            });
+
             if (response.data.success) {
-                if (response.data.data.type === 'quiz') 
-                {
-                    link = `/assignment/${courseId}/${item.assignment_id}`;
-                } else if (response.data.data.type === 'code') 
-                {
-                    link = `/code-submission/${courseId}/${item.assignment_id}`;
-                } else if (response.data.data.type === 'fill') 
-                {
-                    link = `/fill-assignment/${courseId}/${item.assignment_id}`;
+                console.log("Data: " + response.data.data);
+                if (response.data.data.type === 'quiz') {
+                    setLink(`/quiz-assignment/${courseId}/${assignment_id}`);
+                    return ;
                 }
-                dataState.detail = response.data.data;
+                if (response.data.data.type === 'code') {
+                    setLink(`/code-submission/${courseId}/${assignment_id}`);
+                    return ;
+                }
+                else {
+                    setLink('#');
+                    return ;
+                }
             }
         } catch (error) {
-            console.error('Error fetching assignment:', error);
+            setLink('#');
+            return ;
         }
-    };
-
-    useEffect(() => {
-        if (course && course.chapters) {
-            course.chapters.forEach((chapter, chapterIndex) => {
-                chapter.content.forEach((item, index) => {
-                    if (item.content_type !== 'lesson') {
-                        const dataState = {
-                            chapterIndex,
-                            itemIndex: index,
-                            detail: null
-                        };
-                        let link;
-                        fetchAssignment(item, dataState, link);
-                    }
-                });
-            });
-        }
-    }, [course]);
+    }
 
     const renderContent = (content, chapterIndex) => (
         <ul className="lessons-list">
@@ -206,15 +187,11 @@ const CoursePage = () => {
                 const isCompleted = item.completed || courseProgress[item.lesson_id] || courseProgress[item.assignment_id];
                 const dataState = {
                     chapterIndex,
-                    itemIndex: index,
-                    detail: null
+                    itemIndex: index
                 };
 
-                let link;
-
-                if (item.content_type === 'lesson') {
-                    link = `/lesson/${courseId}/${item.lesson_id}`;
-                }
+                if (item.content_type === 'lesson') setLink(`/lesson/${courseId}/${item.lesson_id}`) 
+                else getLinkforAssignment(item.assignment_id);
 
                 return (
                     <li
@@ -222,9 +199,7 @@ const CoursePage = () => {
                         id={item._id}
                         className={`lesson-item ${isCompleted ? 'completed' : 'uncompleted'}`}
                     >
-                        <Link to={item.content_type === 'assignment'
-                            ? `/assignment/${courseId}/${item.assignment_id}`
-                            : `/lesson/${courseId}/${item.lesson_id}`}
+                        <Link to={link? link : '#'}
                             style={{ textDecoration: 'none', color: 'inherit' }}
                             state={dataState}>
 
