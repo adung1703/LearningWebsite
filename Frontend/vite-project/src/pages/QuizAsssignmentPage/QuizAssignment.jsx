@@ -11,69 +11,72 @@ const QuizAssignment = () => {
     const [highestScore, setHighestScore] = useState(null);
     const [answers, setAnswers] = useState([]);
     const location = useLocation();
-
     const dataState = location.state;
     const token = localStorage.getItem('token');
-
     const { chapterIndex, itemIndex } = dataState;
 
+    const fetchAssignment = async (assignmentId) => { 
+        try {
+            const response = await axios.get(`http://localhost:3000/assignment/get-assignment/${assignmentId}`,
+                {
+                    method: 'GET',
+                    headers: {
+                        'Auth-Token': `${token}`,
+                        'Content-Type': 'application/json',
+                    }
+                }
+            );
+            if (response.data.success) {
+                setAssignment(response.data.data);
+            }
+        } catch (error) {
+            console.error('Error fetching assignment:', error);
+        }
+    };
+    const fetchAssignmentState = async (courseId, assignmentId) => {
+        try {
+            const response = await axios.get(`http://localhost:3000/progress/get-course-progress/${courseId}`,
+            {
+                headers: {
+                    'Auth-Token': `${token}`,
+                    'Content-Type': 'application/json',
+                }
+            });
+            if (response.data.success) {
+                const progress = response.data.data;
+                if (progress.progress[parseInt(dataState.chapterIndex)].assignments_completed.includes(assignmentId)) {
+                    setAssignmentState('Đã hoàn thành');
+                } else {
+                    setAssignmentState('Chưa hoàn thành');
+                }
+            }
+        } catch (error) {
+            console.error('Error fetching course progress:', error);
+            setAssignmentState('Chưa hoàn thành');
+        }
+    };
+    const fetchHighestScore = async (assignmentId) => {
+        try {
+            const response = await axios.get(`http://localhost:3000/submission/get-submission/${assignmentId}`,
+            {
+                headers: {
+                    'Auth-Token': `${token}`,
+                    'Content-Type': 'application/json',
+                }
+            });
+            if (response.data.success) {
+                setHighestScore(response.data.data.highest_score);
+            }
+            else setHighestScore(0);
+        } catch (error) {
+            console.error('Error fetching highest score:', error);
+            setHighestScore(0);
+        }
+    };
     useEffect(() => {
-        const fetchAssignment = async () => {
-            try {
-                const response = await axios.get(`http://localhost:3000/assignment/get-assignment/${assignmentId}`,
-                    {
-                        method: 'GET',
-                        headers: {
-                            'Auth-Token': `${token}`,
-                            'Content-Type': 'application/json',
-                        }
-                    }
-                );
-                if (response.data.success) {
-                    setAssignment(response.data.data);
-                }
-            } catch (error) {
-                console.error('Error fetching assignment:', error);
-            }
-            try {
-                const response = await axios.get(`http://localhost:3000/progress/get-course-progress/${courseId}`,
-                {
-                    headers: {
-                        'Auth-Token': `${token}`,
-                        'Content-Type': 'application/json',
-                    }
-                });
-                if (response.data.success) {
-                    const progress = response.data.data;
-                    if (progress.progress[parseInt(dataState.chapterIndex)].assignments_completed.includes(assignmentId)) {
-                        setAssignmentState('Đã hoàn thành');
-                    } else {
-                        setAssignmentState('Chưa hoàn thành');
-                    }
-                }
-            } catch (error) {
-                console.error('Error fetching course progress:', error);
-                setAssignmentState('Chưa hoàn thành');
-            }
-            try {
-                const response = await axios.get(`http://localhost:3000/submission/get-submission/${assignmentId}`,
-                {
-                    headers: {
-                        'Auth-Token': `${token}`,
-                        'Content-Type': 'application/json',
-                    }
-                });
-                if (response.data.success) {
-                    setHighestScore(response.data.data.highest_score);
-                }
-                else setHighestScore(0);
-            } catch (error) {
-                console.error('Error fetching highest score:', error);
-                setHighestScore(0);
-            }
-        };
-
-        fetchAssignment();
+        fetchAssignment(assignmentId);
+        fetchAssignmentState(courseId, assignmentId);
+        fetchHighestScore(assignmentId);
     }, [assignmentId, courseId]);
 
     const mapOptionToLetter = (optionIndex) => {
@@ -105,27 +108,7 @@ const QuizAssignment = () => {
                 }
             );
             setHighestScore(response.data.data.highest_score);
-
-            try {
-                const response = await axios.get(`http://localhost:3000/progress/get-course-progress/${courseId}`,
-                {
-                    headers: {
-                        'Auth-Token': `${token}`,
-                        'Content-Type': 'application/json',
-                    }
-                });
-                if (response.data.success) {
-                    const progress = response.data.data;
-                    if (progress.progress[parseInt(dataState.chapterIndex)].assignments_completed.includes(assignmentId)) {
-                        setAssignmentState('Đã hoàn thành');
-                    } else {
-                        setAssignmentState('Chưa hoàn thành');
-                    }
-                }
-            } catch (error) {
-                console.error('Error fetching course progress:', error);
-                setAssignmentState('Chưa hoàn thành');
-            }
+            fetchAssignmentState(courseId, assignmentId);
 
             alert('Nộp bài thành công!\n' + 'Điểm của bạn là: ' + response.data.data.submission_detail[response.data.data.submission_detail.length - 1].score);
             console.log('Submission response:', response.data);

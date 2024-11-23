@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom'; 
 import Navbar from '../../components/Navbar/Navbar';
 import MonacoEditor from '@monaco-editor/react';  // Correct import
+import CodeResult from '../../components/CodeResult/CodeResult';  // Import CodeResult component
 import './CodeSubmissionPage.css';
 import axios from 'axios';
 
@@ -32,12 +33,13 @@ const CodeSubmissionPage = () => {
                 setCourse(response.data.data);
                 for (let chapter of response.data.data.chapters) {
                     for (let ct of chapter.content) {
-                        if (ct.assignment_id == assignmentId) {
+                        if (ct.assignment_id && ct.assignment_id._id === assignmentId) {
                             setAssignment({ title: chapter.chapter_title });
                             break;
                         }
                     }
                 }
+                console.log(course);
             }
             setLoading(false);
         };
@@ -141,7 +143,7 @@ const CodeSubmissionPage = () => {
                     style={{ backgroundColor: assignmentState === 'Đã hoàn thành' ? 'rgba(0, 128, 0, 0.3)' : 'rgba(255, 0, 0, 0.3)' }}
                 >
                     <h5 className="mb-2 text-2xl font-bold tracking-tight text-gray-900 light:text-black">{assignmentState}</h5>
-                    <p className="font-normal text-gray-700 light:text-gray-900">Điểm cao nhất: <span>{highestScore}</span></p>
+                    <p className="font-normal text-gray-700 light:text-gray-900">Điểm cao nhất: <strong>{highestScore}</strong></p>
                 </a>
             </div>
             <div className="code-editor-section">
@@ -169,12 +171,15 @@ const CodeSubmissionPage = () => {
                 </Link>
             </div>
             {/* Result section */}
-            {result && (
+            {/* {result && (
                 <div className="result-section">
                     <h3>Submission Result:</h3>
                     <p>{result}</p>
                 </div>
-            )}
+            )} */}
+            <div className='result-section'>
+                <CodeResult />
+            </div>
         </div>
     );
 };
