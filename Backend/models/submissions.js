@@ -17,10 +17,12 @@ const submissionSchema = new mongoose.Schema({
                     input: String,
                     expected_output: String,
                     output: String,
-                    status: String // correct | wrong | 
+                    status: String // correct | wrong 
                 }],
                 private: [{
-                    status: String // correct | wrong |
+                    status: String, // correct | wrong 
+                    input: String,
+                    your_output: String
                 }]                
             },
             submit_at: {

@@ -80,12 +80,16 @@ async function runTests(language, version, publicTestCases, privateTestcases, us
             console.log(`Testcase ${index + 1}: Đúng`);
             score++;
             result.testcases.private.push({
-                status: 'correct'
+                status: 'correct',
+                input: test.input,
+                your_output: output
             });
         } else {
             console.log(`Testcase ${index + 1}: Sai (Đầu ra: ${output}, Kỳ vọng: ${test.expected_output})`);
             result.testcases.private.push({
-                status: 'wrong'
+                status: 'wrong',
+                input: test.input,
+                your_output: output
             });
         }
     }
