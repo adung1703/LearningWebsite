@@ -101,8 +101,9 @@ const CodeSubmissionPage = () => {
             const response = await axios.post(
                 'http://localhost:3000/submission/add-submission',
                 {
+                    courseId: courseId,
                     assignmentId: assignmentId,
-                    submission_content: assignment.content.replace(/\n/g, '\\n')
+                    submission_content: assignment.content
                 },
                 {
                     headers: {
@@ -112,8 +113,11 @@ const CodeSubmissionPage = () => {
             );
             if (response.data.success) {
                 setResult('Code submitted successfully. Output: ' + response.data.data.testcases);
-                setAssignmentState('Đã hoàn thành');
-                setHighestScore(response.data.data.highestScore);
+                setHighestScore(response.data.data.highest_score);
+                if (response.data.data.highest_score >= 7) {
+                    setAssignmentState('Đã hoàn thành');
+                }
+                console.log(response.data.data.submission_detail.testcases);
             } else {
                 setResult('Submission failed. Please try again.');
             }

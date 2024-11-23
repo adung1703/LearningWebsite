@@ -14,11 +14,11 @@ const CoursePage = () => {
 
     const [lessonDetails, setLessonDetails] = useState({});
     const [courseProgress, setCourseProgress] = useState({});
-    const [link, setLink] = useState('');
-    const token = localStorage.getItem('token');
 
     useEffect(() => {
         const fetchCourseDetails = async () => {
+            const token = localStorage.getItem('token');
+
             try {
                 const response = await fetch(`http://localhost:3000/course/get-detail/${courseId}`, {
                     method: 'GET',
@@ -46,6 +46,7 @@ const CoursePage = () => {
 
     useEffect(() => {
         const fetchLessonDetails = async () => {
+            const token = localStorage.getItem('token');
             if (course && course.chapters) {
                 for (const chapter of course.chapters) {
                     for (const content of chapter.content) {
@@ -80,6 +81,7 @@ const CoursePage = () => {
 
     useEffect(() => {
         const fetchCourseProgress = async () => {
+            const token = localStorage.getItem('token');
             try {
                 const response = await fetch(`http://localhost:3000/progress/get-course-progress/${courseId}`, {
                     method: 'GET',
@@ -148,50 +150,37 @@ const CoursePage = () => {
             default: return null;
         }
     };
-
-    const getLinkforAssignment = async (assignment_id) => {
-        try {
-            const response = await axios.get(`http://localhost:3000/assignment/get-assignment/${assignment_id}`, {
-                headers: {
-                    'Auth-Token': `${token}`,
-                    'Content-Type': 'application/json',
-                },
-            });
-
-            if (response.data.success) {
-                console.log("Data: " + response.data.data);
-                if (response.data.data.type === 'quiz') {
-                    setLink(`/quiz-assignment/${courseId}/${assignment_id}`);
-                    return ;
-                }
-                if (response.data.data.type === 'code') {
-                    setLink(`/code-submission/${courseId}/${assignment_id}`);
-                    return ;
-                }
-                else {
-                    setLink('#');
-                    return ;
-                }
-            }
-        } catch (error) {
-            setLink('#');
-            return ;
-        }
-    }
-
+    
     const renderContent = (content, chapterIndex) => (
         <ul className="lessons-list">
             {content.map((item, index) => {
                 const contentData = item.content_type === 'lesson' ? lessonDetails[item.lesson_id] : null;
                 const lessonType = contentData ? contentData.type : null;
-                const isCompleted = item.completed || courseProgress[item.lesson_id] || courseProgress[item.assignment_id];
+                const isCompleted = item.completed || 
+                            courseProgress[item.lesson_id] || 
+                            (item.assignment_id && courseProgress[item.assignment_id._id]);
                 const dataState = {
                     chapterIndex,
-                    itemIndex: index
+                    itemIndex: index,
+                    detail: null
                 };
 
-                if (item.content_type === 'lesson') setLink(`/lesson/${courseId}/${item.lesson_id}`) 
-                else getLinkforAssignment(item.assignment_id);
+                let link = ``;
+                if (item.content_type === 'lesson') {
+                    link = `/lesson/${courseId}/${item.lesson_id}`;
+                } else {
+                    if (!item.assignment_id) link = '#';
+                    else if (item.assignment_id.type.toString() === 'quiz') {
+                        link = `/quiz-assignment/${courseId}/${item.assignment_id._id}`;
+                        console.log('Quiz: ' + link);
+                    } else if (item.assignment_id.type.toString() === 'code') {
+                        link = `/code-submission/${courseId}/${item.assignment_id._id}`;
+                        console.log('Code: ' + link);
+                    } else {
+                        link = `/quiz-assignment/${courseId}/${item.assignment_id._id}`; // Các thể loại còn lại đều gom vào quiz
+                    }
+                    console.log('Assignment: ' + link);
+                }
 
                 return (
                     <li
@@ -199,7 +188,7 @@ const CoursePage = () => {
                         id={item._id}
                         className={`lesson-item ${isCompleted ? 'completed' : 'uncompleted'}`}
                     >
-                        <Link to={link? link : '#'}
+                        <Link to={link}
                             style={{ textDecoration: 'none', color: 'inherit' }}
                             state={dataState}>
 

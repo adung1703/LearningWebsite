@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams, Link, useLocation } from 'react-router-dom';
 import axios from 'axios';
 import Navbar from '../../components/Navbar/Navbar';
+import QuizForm from '../../components/QuizForm/QuizForm';
 
 const QuizAssignment = () => {
     const { courseId, assignmentId } = useParams();
@@ -18,7 +19,6 @@ const QuizAssignment = () => {
 
     useEffect(() => {
         const fetchAssignment = async () => {
-            
             try {
                 const response = await axios.get(`http://localhost:3000/assignment/get-assignment/${assignmentId}`,
                     {
@@ -74,7 +74,7 @@ const QuizAssignment = () => {
         };
 
         fetchAssignment();
-    }, [assignmentId]);
+    }, [assignmentId, courseId]);
 
     const mapOptionToLetter = (optionIndex) => {
         const letters = ['a', 'b', 'c', 'd'];
@@ -94,6 +94,7 @@ const QuizAssignment = () => {
             const response = await axios.post('http://localhost:3000/submission/add-submission',
                 {
                     assignmentId,
+                    courseId,
                     submission_content: answers
                 },
                 {
@@ -141,6 +142,7 @@ const QuizAssignment = () => {
     return (
         <div className='QuizPage'>
             <Navbar />
+            <br />
             <div className='flex' id='main-content'>
                 <div className='w-1/5' id='assignment-state-container' style={{ backgroundColor: 'white', padding: '1rem', borderRadius: '0.5rem', boxShadow: '0 0 10px rgba(0, 0, 0, 0.1)' }}>
                     <a 
@@ -153,74 +155,12 @@ const QuizAssignment = () => {
                     </a>
                 </div>
                 <div className="w-full justify-center" id='quizs'>
-                    <div className="max-w-xl mx-auto bg-white p-8 rounded-md shadow-md" style={{ border: '1px solid black' }} id='quiz-border'>
-                        <h1 className="text-3xl font-bold mb-6 text-green-400 text-center text-success">
-                            {assignment.title}
-                        </h1>
-                        <h3 className="text-2xl font-bold mb-6 text-center">
-                            {assignment.description}
-                        </h3>
-                        <form id="quizForm" className="space-y-4">
-                            {assignment.questions.map((question, index) => (
-                                <div key={question._id} className="flex flex-col mb-4">
-                                    <label htmlFor={`q${index}`} className="text-lg text-gray-800 mb-2">
-                                        {index + 1}. {question.question_content}
-                                    </label>
-                                    <div className="flex flex-col">
-                                        {question.options.map((option, optionIndex) => (
-                                            <div key={optionIndex} className="flex items-center mb-2">
-                                                <input
-                                                    type="radio"
-                                                    id={`q${index}o${optionIndex}`}
-                                                    name={`q${index}`}
-                                                    value={option}
-                                                    className="mr-2"
-                                                    required
-                                                    onChange={() => handleOptionChange(index, optionIndex)}
-                                                />
-                                                <label htmlFor={`q${index}o${optionIndex}`} className="text-gray-700">
-                                                    {option}
-                                                </label>
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
-                            ))}
-                            <hr />
-                            <div className="flex justify-between">
-                                {/* <button type="button" onClick="prevQuestion()" className="bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 rounded-md">
-                                    Previous
-                                </button>
-                                <button type="button" onClick="nextQuestion()" className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-1 rounded-md">
-                                    Next
-                                </button>
-                            <Link
-                                to={prevItem ? `/${prevItem.content_type}/${courseId}/${prevItem.lesson_id || prevItem.assignment_id}` : '#'}
-                                className={`bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 rounded-md ${!prevItem ? 'cursor-not-allowed opacity-50' : ''}`}
-                            >
-                                Previous
-                            </Link>
-                            <Link
-                                to={nextItem ? `/${nextItem.content_type}/${courseId}/${nextItem.lesson_id || nextItem.assignment_id}` : '#'}
-                                className={`bg-blue-500 hover:bg-blue-600 text-white px-4 py-1 rounded-md ${!nextItem ? 'cursor-not-allowed opacity-50' : ''}`}
-                            >
-                                Next
-                            </Link> */}
-                            <Link to={`/course/${courseId}`} className='bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 rounded-md'>
-                                <button>View Course</button>
-                            </Link>
-                            </div>
-                            <hr />
-                            <button type="button" onClick={handleSubmit} className="bg-green-500 text-white px-4 py-2 rounded-md mt-8">
-                                Submit
-                            </button>
-                        </form>
-                        <div id="result" className="mt-8 hidden">
-                            <h2 className="text-2xl font-bold mb-4 text-center">Quiz Result</h2>
-                            <p id="score" className="text-lg font-semibold mb-2 text-center"></p>
-                            <p id="feedback" className="text-gray-700 text-center"></p>
-                        </div>
-                    </div>
+                    <QuizForm
+                        assignment={assignment}
+                        answers={answers}
+                        handleOptionChange={handleOptionChange}
+                        handleSubmit={handleSubmit}
+                    />
                 </div>
             </div>
         </div>
