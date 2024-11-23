@@ -40,7 +40,10 @@ async function runTests(language, version, publicTestCases, privateTestcases, us
 
     const result = {
         score: 0,
-        testcases: []
+        testcases: {
+            public: [],
+            private: []
+        }
     };
 
     for (const [index, test] of publicTestCases.entries()) {
@@ -49,7 +52,7 @@ async function runTests(language, version, publicTestCases, privateTestcases, us
         if (output === test.expected_output) {
             console.log(`Testcase ${index + 1}: Đúng`);
             score++;
-            result.testcases.push({
+            result.testcases.public.push({
                 input: test.input,
                 expected_output: test.expected_output,
                 output: output,
@@ -57,7 +60,7 @@ async function runTests(language, version, publicTestCases, privateTestcases, us
             });
         } else {
             console.log(`Testcase ${index + 1}: Sai (Đầu ra: ${output}, Kỳ vọng: ${test.expected_output})`);
-            result.testcases.push({
+            result.testcases.public.push({
                 input: test.input,
                 expected_output: test.expected_output,
                 output: output,
@@ -76,12 +79,12 @@ async function runTests(language, version, publicTestCases, privateTestcases, us
         if (output === test.expected_output) {
             console.log(`Testcase ${index + 1}: Đúng`);
             score++;
-            result.testcases.push({
+            result.testcases.private.push({
                 status: 'correct'
             });
         } else {
             console.log(`Testcase ${index + 1}: Sai (Đầu ra: ${output}, Kỳ vọng: ${test.expected_output})`);
-            result.testcases.push({
+            result.testcases.private.push({
                 status: 'wrong'
             });
         }
@@ -124,18 +127,18 @@ function updateProgress(courseProgress, chapter_order, assignmentId, courseOfAss
 
 exports.addSubmission = async (req, res) => {
     try {
-        console.log(req.body);
         const { id } = req.user;
-        const { assignmentId } = req.body;
+        const { assignmentId, courseId } = req.body;
         const assignment = await Assignments.findById(assignmentId);
-        console.log(assignment);
-        const { course } = assignment;
-        const courseOfAssignment = await Courses.findById(course);
-        let courseProgress = await CourseProgresses.findOne({ userId: id, courseId: course });
+        const courseOfAssignment = await Courses.findById(courseId);
+        console.log("Course: ");
+        console.log(courseOfAssignment);
+        let courseProgress = await CourseProgresses.findOne({ userId: id, courseId: courseId });
+
         if (!courseProgress) {
             courseProgress = await CourseProgresses.create({
                 userId: id,
-                courseId: course,
+                courseId: courseId,
                 progress: courseOfAssignment.chapters.map(chapter => {
                     return {
                         chapter_id: chapter._id,
@@ -159,8 +162,6 @@ exports.addSubmission = async (req, res) => {
             }
         }
 
-        console.log("Chapter Order: " + chapter_order);
-
         if (!assignment) {
             return res.status(404).json({ success: false, message: 'Không tìm thấy bài tập tương ứng' });
         } 
@@ -178,7 +179,8 @@ exports.addSubmission = async (req, res) => {
             
             let score = 0;
             for (let i = 0; i < submission_content.length; i++) {
-                if (answers.answer_content[i] === submission_content[i]) score++;
+                
+                if (answers.answer_content[i].toLowerCase() === submission_content[i]) score++;
             }
 
             let dec_score = score/answers.answer_content.length*10.0;
@@ -250,6 +252,7 @@ exports.addSubmission = async (req, res) => {
         } else if (assignment.type === 'code') {
             const answers = await Answers.findById(assignment.answers);
             const { submission_content } = req.body;
+            console.log('content: ' + submission_content);
             const userCode = 
 `
 ${answers.pre_code}
@@ -261,7 +264,8 @@ ${answers.next_code}
 
             const result = await runTests(answers.language, answers.version, answers.public_testcases, answers.private_testcases, userCode);
 
-            console.log(result);
+            console.log('Public length:' + result.testcases.public.length);
+            console.log('Private length:' + result.testcases.private.length);
             const existedSubmission = await Submissions.findOne({ assignmentId: assignmentId, userId: id });
             if (existedSubmission) {
                 if (existedSubmission.submit_count > 20) return res.status(400).json({ success: false, message: 'Bạn đã nộp bài quá 20 lần' });

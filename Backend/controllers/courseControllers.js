@@ -1,5 +1,6 @@
 const Courses = require('../models/courses');
 const Users = require('../models/users');
+const Assignments = require('../models/assignments');
 const CourseProgresses = require('../models/course_progresses');
 const { S3Client, PutObjectCommand, DeleteObjectCommand } = require('@aws-sdk/client-s3'); // Import PutObjectCommand và DeleteObjectCommand
 const { s3Client, region } = require('../config/s3Config'); // Import cấu hình S3 và region
@@ -87,7 +88,15 @@ exports.getCourseDetail = async (req, res) => {
         const { courseId } = req.params;
         const { coursesJoined } = await Users.findById(req.user.id).select('coursesJoined');
 
-        const course = await Courses.findById(courseId).populate('instructor', 'fullname avatar');
+        const course = await Courses.findById(courseId)
+            .populate('instructor', 'fullname avatar')
+            .populate({
+            path: 'chapters.content.assignment_id',
+            model: 'Assignments',
+            select: 'type',
+            options: { retainNullValues: true } // Giữ nguyên id nếu không tìm thấy trong reference
+            });
+
         if (!course) {
             return res.status(404).json({ success: false, message: 'Không tìm thấy khóa học' });
         }
@@ -165,7 +174,7 @@ exports.addCourse = [
     }
 ];
 
-exports.updateCourse = [
+exports.updateCourse = [ //Cập nhật những gì không đụng đến chapters
     upload.single('image'), // Middleware để xử lý file upload
     async (req, res) => {
         try {
