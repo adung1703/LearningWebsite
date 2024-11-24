@@ -541,22 +541,24 @@ const lastSubmission = ex.submission_detail[ex.submission_detail.length - 1];
 
 const publicTestCases = lastSubmission.testcases.public.map((testCase) => (
     <tr className="hover:bg-slate-700" key={testCase._id}>
-        <td className="p-4 border-b border-slate-700">
+        <td className="p-4 border-b border-r border-slate-700">
             <p className="text-sm text-slate-100 font-semibold">
-                {testCase.input}
+                {testCase.input.split('\n').map((line, index) => (
+                    <span key={index}>{line}<br /></span>
+                ))}
             </p>
         </td>
-        <td className="p-4 border-b border-slate-700">
+        <td className="p-4 border-b border-r border-slate-700">
             <p className="text-sm text-slate-300">
                 {testCase.expected_output}
             </p>
         </td>
-        <td className="p-4 border-b border-slate-700">
+        <td className="p-4 border-b border-r border-slate-700">
             <p className="text-sm text-slate-300">
                 {testCase.output}
             </p>
         </td>
-        <td className="p-4 border-b border-slate-700">
+        <td className="p-4 border-b border-r border-slate-700">
             <p className={`text-sm ${testCase.status === 'correct' ? 'text-green-500' : 'text-red-500'}`}>
                 {testCase.status}
             </p>
@@ -566,17 +568,17 @@ const publicTestCases = lastSubmission.testcases.public.map((testCase) => (
 
 const privateTestCases = lastSubmission.testcases.private.map((testCase) => (
     <tr className="hover:bg-slate-700" key={testCase._id}>
-        <td className="p-4 border-b border-slate-700">
+        <td className="p-4 border-b border-r border-slate-700">
             <p className="text-sm text-slate-100 font-semibold">
                 {testCase.input}
             </p>
         </td>
-        <td className="p-4 border-b border-slate-700">
+        <td className="p-4 border-b border-r border-slate-700">
             <p className="text-sm text-slate-300">
                 {testCase.your_output}
             </p>
         </td>
-        <td className="p-4 border-b border-slate-700">
+        <td className="p-4 border-b border-r border-slate-700">
             <p className={`text-sm ${testCase.status === 'correct' ? 'text-green-500' : 'text-red-500'}`}>
                 {testCase.status}
             </p>
@@ -585,127 +587,27 @@ const privateTestCases = lastSubmission.testcases.private.map((testCase) => (
 ));
 
 const history = ex.submission_detail.map((submission) => (
-    <tr key={submission._id}>
-        <td className="p-4 border-b border-slate-700">
-            <p className="text-sm text-slate-300">
+    <tr key={submission._id} className="hover:bg-slate-50">
+        <td className="p-4 border-b border-r">
+            <p className="text-sm">
                 {submission.score}
             </p>
         </td>
-        <td className="p-4 border-b border-slate-700">
-            <p className="text-sm text-slate-300">
+        <td className="p-4 border-b border-r">
+            <p className="text-sm font-bold">
                 {new Date(submission.submit_at).toLocaleString()}
             </p>
+        </td>
+        <td className="p-4 border-b border-r">
+            <a href="#" className="text-sm font-semibold ">
+                Edit
+            </a>
         </td>
     </tr>
 ));
 
-export default function TabsDefault() {
+/*
 
-    const data = [
-        {
-            label: "Test Case Công Khai",
-            value: "public",
-            desc: <div className="relative flex flex-col w-full h-full overflow-scroll text-slate-300 bg-slate-800 shadow-md rounded-lg bg-clip-border">
-                <table className="w-full text-left table-auto min-w-max">
-                    <thead>
-                        <tr>
-                            <th className="p-4 border-b border-slate-600 bg-slate-700">
-                                <p className="text-sm font-bold leading-none text-slate-300">
-                                    Input
-                                </p>
-                            </th>
-                            <th className="p-4 border-b border-slate-600 bg-slate-700">
-                                <p className="text-sm font-bold leading-none text-slate-300">
-                                    Expected Output
-                                </p>
-                            </th>
-                            <th className="p-4 border-b border-slate-600 bg-slate-700">
-                                <p className="text-sm font-bold leading-none text-slate-300">
-                                    Your Output
-                                </p>
-                            </th>
-                            <th className="p-4 border-b border-slate-600 bg-slate-700">
-                                <p className="text-sm font-bold leading-none text-slate-300">
-                                    Status
-                                </p>
-                            </th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {publicTestCases}
-                    </tbody>
-                </table>
-            </div>,
-        },
-        {
-            label: "Test Case Ẩn",
-            value: "private",
-            desc: <div className="relative flex flex-col w-full h-full overflow-scroll text-slate-300 bg-slate-800 shadow-md rounded-lg bg-clip-border">
-                <table className="w-full text-left table-auto min-w-max">
-                    <thead>
-                        <tr>
-                            <th className="p-4 border-b border-slate-600 bg-slate-700">
-                                <p className="text-sm font-bold leading-none text-slate-300">
-                                    Input
-                                </p>
-                            </th>
-                            <th className="p-4 border-b border-slate-600 bg-slate-700">
-                                <p className="text-sm font-bold leading-none text-slate-300">
-                                    Your Output
-                                </p>
-                            </th>
-                            <th className="p-4 border-b border-slate-600 bg-slate-700">
-                                <p className="text-sm font-bold leading-none text-slate-300">
-                                    Status
-                                </p>
-                            </th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {privateTestCases}
-                    </tbody>
-                </table>
-            </div>
-        },
-        {
-            label: "Lịch Sử Nộp Bài",
-            value: "history",
-            desc:
-                <div class="relative flex flex-col w-full h-full overflow-scroll text-gray-700 bg-white shadow-md rounded-lg bg-clip-border">
-                    <table class="w-full text-left table-auto min-w-max text-slate-800">
-                        <thead>
-                            <tr class="text-slate-500 border-b border-slate-300 bg-slate-50">
-                                <th class="p-4">
-                                    <p class="text-sm leading-none font-normal">
-                                        Project Name
-                                    </p>
-                                </th>
-                                <th class="p-4">
-                                    <p class="text-sm leading-none font-normal">
-                                        Start Date
-                                    </p>
-                                </th>
-                                <th class="p-4">
-                                    <p class="text-sm leading-none font-normal">
-                                        End Date
-                                    </p>
-                                </th>
-                                <th class="p-4">
-                                    <p class="text-sm leading-none font-normal">
-                                        Owner
-                                    </p>
-                                </th>
-                                <th class="p-4">
-                                    <p class="text-sm leading-none font-normal">
-                                        Budget
-                                    </p>
-                                </th>
-                                <th class="p-4">
-                                    <p></p>
-                                </th>
-                            </tr>
-                        </thead>
-                        <tbody>
                             <tr class="hover:bg-slate-50">
                                 <td class="p-4">
                                     <p class="text-sm font-bold">
@@ -866,6 +768,101 @@ export default function TabsDefault() {
                                     </a>
                                 </td>
                             </tr>
+*/
+
+export default function TabsDefault() {
+
+    const data = [
+        {
+            label: "Test Case Công Khai",
+            value: "public",
+            desc: <div className="relative flex flex-col w-full h-full overflow-scroll text-slate-300 bg-slate-800 shadow-md rounded-lg bg-clip-border">
+                <table className="w-full text-left table-auto min-w-max">
+                    <thead>
+                        <tr>
+                            <th className="p-4 border-b border-r border-slate-600 bg-slate-700">
+                                <p className="text-sm font-bold leading-none text-slate-300">
+                                    Input
+                                </p>
+                            </th>
+                            <th className="p-4 border-b border-r border-slate-600 bg-slate-700">
+                                <p className="text-sm font-bold leading-none text-slate-300">
+                                    Expected Output
+                                </p>
+                            </th>
+                            <th className="p-4 border-b border-r border-slate-600 bg-slate-700">
+                                <p className="text-sm font-bold leading-none text-slate-300">
+                                    Your Output
+                                </p>
+                            </th>
+                            <th className="p-4 border-b border-r border-slate-600 bg-slate-700">
+                                <p className="text-sm font-bold leading-none text-slate-300">
+                                    Status
+                                </p>
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {publicTestCases}
+                    </tbody>
+                </table>
+            </div>,
+        },
+        {
+            label: "Test Case Ẩn",
+            value: "private",
+            desc: <div className="relative flex flex-col w-full h-full overflow-scroll text-slate-300 bg-slate-800 shadow-md rounded-lg bg-clip-border">
+                <table className="w-full text-left table-auto min-w-max">
+                    <thead>
+                        <tr>
+                            <th className="p-4 border-b border-r border-slate-600 bg-slate-700">
+                                <p className="text-sm font-bold leading-none text-slate-300">
+                                    Input
+                                </p>
+                            </th>
+                            <th className="p-4 border-b border-r border-slate-600 bg-slate-700">
+                                <p className="text-sm font-bold leading-none text-slate-300">
+                                    Your Output
+                                </p>
+                            </th>
+                            <th className="p-4 border-b border-r border-slate-600 bg-slate-700">
+                                <p className="text-sm font-bold leading-none text-slate-300">
+                                    Status
+                                </p>
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {privateTestCases}
+                    </tbody>
+                </table>
+            </div>
+        },
+        {
+            label: "Lịch Sử Nộp Bài",
+            value: "history",
+            desc:
+                <div class="relative flex flex-col w-full h-full overflow-scroll text-gray-700 bg-white shadow-md rounded-lg bg-clip-border">
+                    <table class="w-full text-left table-auto min-w-max text-slate-800">
+                        <thead>
+                            <tr class="text-slate-500 border-b border-r border-slate-300 bg-slate-50">
+                                <th class="p-4 border-r">
+                                    <p class="text-sm leading-none font-normal">
+                                        Điểm
+                                    </p>
+                                </th>
+                                <th class="p-4">
+                                    <p class="text-sm leading-none font-normal">
+                                        Thời gian
+                                    </p>
+                                </th>
+                                <th class="p-4 border-r">
+                                    <p></p>
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {history}
                         </tbody>
                     </table>
                 </div>
