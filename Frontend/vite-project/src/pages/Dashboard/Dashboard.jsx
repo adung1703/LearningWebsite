@@ -315,27 +315,39 @@ const Dashboard = () => {
                 </div>
             </div>
 
-            {/* Course Modal */}
             {modalVisible && selectedCourse && (
-                <div className="course-modal">
-                    <div className="modal-content">
-                        <span className="close" onClick={handleCloseModal}>X</span>
+                <div className="modal-overlay">
+                    <div className="modal">
                         <h2>{selectedCourse.title}</h2>
                         <p>{selectedCourse.description}</p>
-                        <button onClick={() => handleJoinCourse(selectedCourse)}>
-                            {isCourseJoined(selectedCourse._id) ? 'Đã tham gia' : 'Tham gia khóa học'}
-                        </button>
+                        <div className="modal-instructor">
+                            <img src={selectedCourse.instructor.avatar} alt="Instructor Avatar" />
+                            <span>{selectedCourse.instructor.fullname}</span>
+                        </div>
+                        <p><strong>Giá:</strong> {formatPrice(selectedCourse.price)}</p>
+                        {isCourseJoined(selectedCourse._id) ? (
+                            <p>Bạn đã tham gia khóa học</p>
+                        ) : (
+                            <button onClick={() => handleJoinCourse(selectedCourse)} className="join-button">Tham gia</button>
+                        )}
+                        <button onClick={handleCloseModal} className="close-button">Đóng</button>
                     </div>
                 </div>
             )}
 
-            {/* Payment Modal */}
+            {/* Payment Modal for Paid Courses */}
             {paymentModalVisible && (
-                <div className="payment-modal">
-                    <div className="modal-content">
-                        <span className="close" onClick={handleClosePaymentModal}>X</span>
-                        <h2>Quét mã QR để thanh toán</h2>
-                        <div className="qr-code">{qrCode}</div>
+                <div className="modal-overlay">
+                    <div className="modal">
+                        <h2>Hãy chuyển khoản số tiền tương ứng</h2>
+                        <p>Admin sẽ duyệt đăng ký của bạn sớm nhất có thể</p>
+                        <div className="payment-qr-code">
+                            <img
+                                src={`https://api.qrserver.com/v1/create-qr-code/?data=${qrCode}&size=150x150`}
+                                alt="QR Code"
+                            />
+                        </div>
+                        <button onClick={handleClosePaymentModal} className="close-button">Đóng</button>
                     </div>
                 </div>
             )}
