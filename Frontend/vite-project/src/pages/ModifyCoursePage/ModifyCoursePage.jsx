@@ -29,6 +29,9 @@ const ModifyCoursePage = () => {
     const [newChapterTitle, setNewChapterTitle] = useState('');
     const [lastAddedChapter, setLastAddedChapter] = useState(null);  // Track the last added chapter
     const [pdfFile, setPdfFile] = useState(null);
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+    const [isDeleteChapterModalOpen, setIsDeleteChapterModalOpen] = useState(false);
+    const [chapterToDelete, setChapterToDelete] = useState(null);   
 
     useEffect(() => {
         const fetchCourseDetails = async () => {
@@ -105,7 +108,11 @@ const ModifyCoursePage = () => {
     };
     
 
-
+    const openDeleteChapterModal = (chapterId) => {
+        setChapterToDelete(chapterId);
+        setIsDeleteChapterModalOpen(true);
+    };
+    
     const openAddLessonModal = (chapterOrder) => {
         setNewLessonData({ ...newLessonData, chapterOrder });
         setIsAddLessonModalOpen(true);
@@ -122,7 +129,32 @@ const ModifyCoursePage = () => {
         });
         setError(''); // Reset error message when closing the modal
     };
-
+    const deleteChapter = async () => {
+        const token = localStorage.getItem('token');
+        try {
+            const response = await fetch(`http://localhost:3000/course/delete-chapter/${courseId}/${chapterToDelete}`, {
+                method: 'DELETE',
+                headers: {
+                    'Auth-Token': token,
+                    'Content-Type': 'application/json',
+                },
+            });
+            const data = await response.json();
+            if (response.ok) {
+                // Update the state to remove the chapter from the UI
+                setCourse((prev) => ({
+                    ...prev,
+                    chapters: prev.chapters.filter((chapter) => chapter._id !== chapterToDelete),
+                }));
+                setIsDeleteChapterModalOpen(false); // Close modal after deletion
+            } else {
+                setError(data.message);
+            }
+        } catch (error) {
+            setError('Không thể xóa chương.');
+        }
+    };
+    
     const addChapter = async () => {
         const token = localStorage.getItem('token');
         try {
@@ -183,7 +215,36 @@ const ModifyCoursePage = () => {
             throw error;
         }
     };
-    
+
+    const handleDeleteConfirmation = () => {
+        deleteCourse();
+        setIsDeleteModalOpen(false); // Close the modal after deleting the course
+    };
+
+    const handleDeleteCancel = () => {
+        setIsDeleteModalOpen(false); // Close the modal if cancel is clicked
+    };
+
+    const deleteCourse = async () => {
+        const token = localStorage.getItem('token');
+        try {
+            const response = await fetch(`http://localhost:3000/course/delete-course/${courseId}`, {
+                method: 'DELETE',
+                headers: {
+                    'Auth-Token': token,
+                    'Content-Type': 'application/json',
+                },
+            });
+            const data = await response.json();
+            if (response.ok) {
+                navigate('/dashboard'); // Redirect to courses list page after successful deletion
+            } else {
+                setError(data.message);
+            }
+        } catch (error) {
+            setError('Không thể xóa khóa học.');
+        }
+    };
     const addLesson = async () => {
         const { title, description, type, chapterOrder } = newLessonData;
         let url = newLessonData.url; // Default URL for video
@@ -256,6 +317,12 @@ const ModifyCoursePage = () => {
                 <div className="course-header">
                     <h1>{course.title}</h1>
                     <p className="course-description">{course.description}</p>
+                    <button className="update-course-button" onClick={() => navigate(`/update-course/${courseId}`)}>
+                            Sửa thông tin khóa học
+                    </button>
+                    <button className="delete-course-button" onClick={() => setIsDeleteModalOpen(true)}>
+                            Xóa khóa học
+                    </button>
                     {!isAddingChapter ? (
                         <button className="add-chapter-button" onClick={() => setIsAddingChapter(true)}>
                             Thêm chương
@@ -295,6 +362,9 @@ const ModifyCoursePage = () => {
                         </button>
                         <button className="add-lesson-button" onClick={() => navigate(`/add-assignment/${courseId}/${chapter.order}`)}>
                             Thêm bài tập
+                        </button>
+                        <button className="delete-chapter-button" onClick={() => openDeleteChapterModal(chapter._id)}>
+                            Xóa chương
                         </button>
                     </div>
                 ))}
@@ -359,6 +429,33 @@ const ModifyCoursePage = () => {
                     {error && <div className="error-message">{error}</div>}
                     <button className="save-button" onClick={addLesson}>Thêm Bài Học</button>
                     <button onClick={closeAddLessonModal}>Hủy</button>
+                </Modal>
+            )}
+            {isDeleteModalOpen && (
+                <Modal
+                    isOpen={isDeleteModalOpen}
+                    onRequestClose={handleDeleteCancel}
+                    contentLabel="Xóa khóa học"
+                    className="delete-modal"
+                    overlayClassName="delete-modal-overlay"
+                >
+                    <h2>Bạn có chắc chắn muốn xóa khóa học này không?</h2>
+                    <button className="confirm-button" onClick={handleDeleteConfirmation}>Xác nhận</button>
+                    <button className="cancel-button" onClick={handleDeleteCancel}>Hủy</button>
+                </Modal>
+            )}
+
+            {isDeleteChapterModalOpen && (
+                <Modal
+                    isOpen={isDeleteChapterModalOpen}
+                    onRequestClose={() => setIsDeleteChapterModalOpen(false)}
+                    contentLabel="Xóa Chương"
+                    className="delete-modal"
+                    overlayClassName="delete-modal-overlay"
+                >
+                    <h2>Bạn có chắc chắn muốn xóa chương này không?</h2>
+                    <button className="confirm-button" onClick={deleteChapter}>Xác nhận</button>
+                    <button className="cancel-button" onClick={() => setIsDeleteChapterModalOpen(false)}>Hủy</button>
                 </Modal>
             )}
 

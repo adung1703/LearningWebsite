@@ -15,6 +15,7 @@ const Dashboard = () => {
     const [selectedCourse, setSelectedCourse] = useState(null);
     const [qrCode, setQrCode] = useState('');
     const [courseProgress, setCourseProgress] = useState({});
+    const [userInfo, setUserInfo] = useState(null);
 
     const navigate = useNavigate();
 
@@ -24,6 +25,26 @@ const Dashboard = () => {
             navigate('/sign-in');
             return;
         }
+        const fetchUserInfo = async () => {
+            try {
+                const response = await fetch(`http://localhost:3000/user/user-info`, {
+                    method: 'GET',
+                    headers: {
+                        'Auth-Token': token,
+                    },
+                });
+
+                const data = await response.json();
+                if (data.success) {
+                    setUserInfo(data.user);
+                } else {
+                    console.error('Failed to fetch user info:', data.message);
+                }
+            } catch (error) {
+                console.error('Error fetching user info:', error);
+            }
+        };
+
         const fetchCourses = async () => {
             try {
                 const response = await fetch(`http://localhost:3000/course/all-courses`, {
@@ -77,6 +98,7 @@ const Dashboard = () => {
 
         fetchCourses();
         fetchJoinedCourses();
+        fetchUserInfo();
     }, [currentPage]);
 
     const formatPrice = (price) => {
@@ -149,6 +171,7 @@ const Dashboard = () => {
                     console.log(`Successfully joined course: ${course.title}`);
                     setModalVisible(false);  // Close the modal
                     alert(`Bạn đã tham gia khóa học: ${course.title}`);  // Display success message
+                    window.location.reload();
                 } else {
                     console.error(data.message || 'Error joining course');
                     alert('Đã xảy ra lỗi khi tham gia khóa học.');
@@ -208,7 +231,7 @@ const Dashboard = () => {
                     const progressPercentage = (totalCompleted / totalLessons) * 100;
     
                     // Ensure two decimal places
-                    const formattedProgress = progressPercentage.toFixed(2);
+                    const formattedProgress = progressPercentage.toFixed(0);
     
                     setCourseProgress((prevProgress) => ({
                         ...prevProgress,
@@ -314,6 +337,45 @@ const Dashboard = () => {
                     )}
                 </div>
             </div>
+            
+            {userInfo && (userInfo.role === 'instructor' || userInfo.role === 'admin') && (
+                <div className="courses-container">
+                    <h2>Khóa học đang quản lý</h2>
+                    <div className="courses-section">
+                        {courses.length > 0 ? (
+                            <div className="courses-grid">
+                                {courses.map((course) => (
+                                    <div key={course._id} className="course-item">
+                                        <img
+                                            src={course.image}
+                                            alt={course.title}
+                                            className="course-image"
+                                        />
+                                        <h3 className="course-title">{course.title}</h3>
+                                        <p className="price">{formatPrice(course.price)}</p>
+                                        <div className="instructor">
+                                            <img
+                                                src={course.instructor.avatar}
+                                                alt="Instructor Avatar"
+                                                className="instructor-avatar"
+                                            />
+                                            <span className="instructor-name">{course.instructor.fullname}</span>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        ) : (
+                            <p>Bạn chưa quản lý khóa học nào.</p>
+                        )}
+                    </div>
+                    <button 
+                        className="add-course-button" 
+                        onClick={() => navigate('/add-course')}>
+                        Thêm khóa học
+                    </button>
+                </div>
+            )}
+
 
             {modalVisible && selectedCourse && (
                 <div className="modal-overlay">
