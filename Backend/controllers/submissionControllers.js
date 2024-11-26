@@ -274,7 +274,7 @@ ${answers.next_code}
             if (existedSubmission) {
                 if (existedSubmission.submit_count > 20) return res.status(400).json({ success: false, message: 'Bạn đã nộp bài quá 20 lần' });
                 existedSubmission.submit_count++;
-                existedSubmission.submission_detail.push({
+                existedSubmission.submission_detail.unshift({
                     content: submission_content,
                     testcases: result.testcases,
                     score: result.score
