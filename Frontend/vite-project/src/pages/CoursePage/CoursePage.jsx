@@ -172,14 +172,11 @@ const CoursePage = () => {
                     if (!item.assignment_id) link = '#';
                     else if (item.assignment_id.type.toString() === 'quiz') {
                         link = `/quiz-assignment/${courseId}/${item.assignment_id._id}`;
-                        console.log('Quiz: ' + link);
                     } else if (item.assignment_id.type.toString() === 'code') {
                         link = `/code-submission/${courseId}/${item.assignment_id._id}`;
-                        console.log('Code: ' + link);
                     } else {
                         link = `/quiz-assignment/${courseId}/${item.assignment_id._id}`; // Các thể loại còn lại đều gom vào quiz
                     }
-                    console.log('Assignment: ' + link);
                 }
 
                 return (
