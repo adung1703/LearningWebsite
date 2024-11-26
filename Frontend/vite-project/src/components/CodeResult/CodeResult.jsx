@@ -5,6 +5,7 @@ import {
     Tab,
     TabPanel,
 } from "@material-tailwind/react";
+import Submission from "./ViewOldSubmission.jsx";
 
 const ex = {
     "_id": "674220ec96fc12934afd6119",
@@ -537,7 +538,7 @@ const ex = {
     "__v": 5
 }
 
-const lastSubmission = ex.submission_detail[ex.submission_detail.length - 1];
+const lastSubmission = ex.submission_detail[0];
 
 const publicTestCases = lastSubmission.testcases.public.map((testCase) => (
     <tr className="hover:bg-slate-700" key={testCase._id}>
@@ -593,182 +594,20 @@ const history = ex.submission_detail.map((submission) => (
                 {submission.score}
             </p>
         </td>
-        <td className="p-4 border-b border-r">
+        <td className="p-4 border-b">
             <p className="text-sm font-bold">
                 {new Date(submission.submit_at).toLocaleString()}
             </p>
         </td>
-        <td className="p-4 border-b border-r">
-            <a href="#" className="text-sm font-semibold ">
-                Edit
-            </a>
+        <td className="p-4 border-b">
+            <Submission/>
+            {/* <a className="text-sm font-semibold text-blue-700">
+                View
+            </a> */}
         </td>
     </tr>
 ));
 
-/*
-
-                            <tr class="hover:bg-slate-50">
-                                <td class="p-4">
-                                    <p class="text-sm font-bold">
-                                        Project Alpha
-                                    </p>
-                                </td>
-                                <td class="p-4">
-                                    <p class="text-sm">
-                                        01/01/2024
-                                    </p>
-                                </td>
-                                <td class="p-4">
-                                    <p class="text-sm">
-                                        30/06/2024
-                                    </p>
-                                </td>
-                                <td class="p-4">
-                                    <p class="text-sm">
-                                        John Michael
-                                    </p>
-                                </td>
-                                <td class="p-4">
-                                    <p class="text-sm">
-                                        $50,000
-                                    </p>
-                                </td>
-                                <td class="p-4">
-                                    <a href="#" class="text-sm font-semibold ">
-                                        Edit
-                                    </a>
-                                </td>
-                            </tr>
-                            <tr class="hover:bg-slate-50">
-                                <td class="p-4">
-                                    <p class="text-sm font-bold">
-                                        Beta Campaign
-                                    </p>
-                                </td>
-                                <td class="p-4">
-                                    <p class="text-sm">
-                                        15/02/2024
-                                    </p>
-                                </td>
-                                <td class="p-4">
-                                    <p class="text-sm">
-                                        15/08/2024
-                                    </p>
-                                </td>
-                                <td class="p-4">
-                                    <p class="text-sm">
-                                        Alexa Liras
-                                    </p>
-                                </td>
-                                <td class="p-4">
-                                    <p class="text-sm">
-                                        $75,000
-                                    </p>
-                                </td>
-                                <td class="p-4">
-                                    <a href="#" class="text-sm font-semibold ">
-                                        Edit
-                                    </a>
-                                </td>
-                            </tr>
-                            <tr class="hover:bg-slate-50">
-                                <td class="p-4">
-                                    <p class="text-sm font-bold">
-                                        Campaign Delta
-                                    </p>
-                                </td>
-                                <td class="p-4">
-                                    <p class="text-sm">
-                                        01/03/2024
-                                    </p>
-                                </td>
-                                <td class="p-4">
-                                    <p class="text-sm">
-                                        01/09/2024
-                                    </p>
-                                </td>
-                                <td class="p-4">
-                                    <p class="text-sm">
-                                        Laurent Perrier
-                                    </p>
-                                </td>
-                                <td class="p-4">
-                                    <p class="text-sm">
-                                        $60,000
-                                    </p>
-                                </td>
-                                <td class="p-4">
-                                    <a href="#" class="text-sm font-semibold ">
-                                        Edit
-                                    </a>
-                                </td>
-                            </tr>
-                            <tr class="hover:bg-slate-50">
-                                <td class="p-4">
-                                    <p class="text-sm font-bold">
-                                        Gamma Outreach
-                                    </p>
-                                </td>
-                                <td class="p-4">
-                                    <p class="text-sm">
-                                        10/04/2024
-                                    </p>
-                                </td>
-                                <td class="p-4">
-                                    <p class="text-sm">
-                                        10/10/2024
-                                    </p>
-                                </td>
-                                <td class="p-4">
-                                    <p class="text-sm">
-                                        Michael Levi
-                                    </p>
-                                </td>
-                                <td class="p-4">
-                                    <p class="text-sm">
-                                        $80,000
-                                    </p>
-                                </td>
-                                <td class="p-4">
-                                    <a href="#" class="text-sm font-semibold ">
-                                        Edit
-                                    </a>
-                                </td>
-                            </tr>
-                            <tr class="hover:bg-slate-50">
-                                <td class="p-4">
-                                    <p class="text-sm font-bold">
-                                        Omega Strategy
-                                    </p>
-                                </td>
-                                <td class="p-4">
-                                    <p class="text-sm">
-                                        01/05/2024
-                                    </p>
-                                </td>
-                                <td class="p-4">
-                                    <p class="text-sm">
-                                        01/11/2024
-                                    </p>
-                                </td>
-                                <td class="p-4">
-                                    <p class="text-sm">
-                                        Richard Gran
-                                    </p>
-                                </td>
-                                <td class="p-4">
-                                    <p class="text-sm">
-                                        $100,000
-                                    </p>
-                                </td>
-                                <td class="p-4">
-                                    <a href="#" class="text-sm font-semibold ">
-                                        Edit
-                                    </a>
-                                </td>
-                            </tr>
-*/
 
 export default function TabsDefault() {
 
@@ -847,17 +686,17 @@ export default function TabsDefault() {
                         <thead>
                             <tr class="text-slate-500 border-b border-r border-slate-300 bg-slate-50">
                                 <th class="p-4 border-r">
-                                    <p class="text-sm leading-none font-normal">
+                                    <p >
                                         Điểm
                                     </p>
                                 </th>
                                 <th class="p-4">
-                                    <p class="text-sm leading-none font-normal">
+                                    <p >
                                         Thời gian
                                     </p>
                                 </th>
                                 <th class="p-4 border-r">
-                                    <p></p>
+                                    <p>Xem chi tiết</p>
                                 </th>
                             </tr>
                         </thead>
