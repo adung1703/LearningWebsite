@@ -12,7 +12,8 @@ const submissionRoutes = require('./routes/submissionRoutes.js');
 const progressRoutes = require('./routes/progressRoutes.js');
 const s3 = require('./config/s3Config.js');
 
-const DB_URI = 'mongodb+srv://adung1703:Adung_2003@cluster0.klijv.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0';
+// const DB_URI = 'mongodb+srv://adung1703:Adung_2003@cluster0.klijv.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0';
+const DB_URI = process.env.DB_URI;
 const mongoose = require("mongoose");
 
 mongoose
