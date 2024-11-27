@@ -76,3 +76,15 @@
     cursor: not-allowed;
     border-color: #4caf50;
 }
+
+.next-lesson-section button.disabled {
+    background-color: #d3d3d3; /* Grey background for disabled button */
+    color: #8c8c8c; /* Light grey text color */
+    cursor: not-allowed; /* Indicate button is unclickable */
+    border-color: #d3d3d3; /* Match border to background */
+}
+
+.next-lesson-section button.disabled:hover {
+    background-color: #d3d3d3; /* Ensure no color change on hover */
+    color: #8c8c8c; /* Ensure no text color change */
+}

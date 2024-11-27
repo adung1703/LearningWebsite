@@ -317,6 +317,9 @@ const ModifyCoursePage = () => {
                 <div className="course-header">
                     <h1>{course.title}</h1>
                     <p className="course-description">{course.description}</p>
+                    <button className="manage-course-student-button" onClick={() => navigate(`/manage-course-student/${courseId}`)}>
+                            Quản lý học viên
+                    </button>
                     <button className="update-course-button" onClick={() => navigate(`/update-course/${courseId}`)}>
                             Sửa thông tin khóa học
                     </button>

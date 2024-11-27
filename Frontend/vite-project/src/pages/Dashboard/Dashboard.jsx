@@ -102,6 +102,9 @@ const Dashboard = () => {
     }, [currentPage]);
 
     const formatPrice = (price) => {
+        if (price === undefined || price === null) {
+            return 'Chưa cập nhật'; // Or any fallback message you'd prefer
+        }
         return price === 0 ? 'Miễn phí' : price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
     };
 

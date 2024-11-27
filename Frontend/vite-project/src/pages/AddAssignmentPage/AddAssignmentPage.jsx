@@ -18,10 +18,12 @@ const AddAssignmentPage = () => {
     const [fillAnswers, setFillAnswers] = useState([{ content: '', correctAnswer: '' }]);
     const [supportedLanguages, setSupportedLanguages] = useState([]);
     const [selectedLanguage, setSelectedLanguage] = useState('');
+    const [selectedVersion, setSelectedVersion] = useState('');
     const [preCode, setPreCode] = useState('');
     const [nextCode, setNextCode] = useState('');
-    const [testcasePublic, setTestcasePublic] = useState(null);
-    const [testcasePrivate, setTestcasePrivate] = useState(null);
+    const [publicTestCases, setPublicTestCases] = useState([{ input: '', expected_output: '' }]);
+    const [privateTestCases, setPrivateTestCases] = useState([{ input: '', expected_output: '' }]);
+
 
     useEffect(() => {
         const fetchSupportedLanguages = async () => {
@@ -30,6 +32,7 @@ const AddAssignmentPage = () => {
                 setSupportedLanguages(response.data);
                 if (response.data.length > 0) {
                     setSelectedLanguage(response.data[0].language); // Default to first language
+                    setSelectedVersion(response.data[0].version); // Default to first language
                 }
             } catch (error) {
                 console.error('Error fetching languages:', error);
@@ -38,6 +41,20 @@ const AddAssignmentPage = () => {
         fetchSupportedLanguages();
     }, []);
 
+    const handleTestCaseChange = (testCases, setTestCases, index, field, value) => {
+        const updatedTestCases = [...testCases];
+        updatedTestCases[index][field] = value;
+        setTestCases(updatedTestCases);
+    };
+
+    const handleAddTestCase = (testCases, setTestCases) => {
+        setTestCases([...testCases, { input: '', expected_output: '' }]);
+    };
+
+    const handleRemoveTestCase = (testCases, setTestCases, index) => {
+        const updatedTestCases = testCases.filter((_, i) => i !== index);
+        setTestCases(updatedTestCases);
+    };
     const handleSubmit = async (e) => {
         e.preventDefault();
 
@@ -83,11 +100,11 @@ const AddAssignmentPage = () => {
                     fillAnswers.map(fa => fa.correctAnswer) :
                     null,
             language: assignmentType === 'code' ? selectedLanguage : null,
-            version: assignmentType === 'code' ? supportedLanguages.find(lang => lang.language === selectedLanguage)?.version : null,
+            version: assignmentType === 'code' ? selectedVersion : null,
             pre_code: assignmentType === 'code' ? preCode.replace(/\n/g, '\\n') : null,
             next_code: assignmentType === 'code' ? nextCode.replace(/\n/g, '\\n') : null,
-            public_testcases: null, // Not using test cases for now
-            private_testcases: null, // Not using test cases for now
+            public_testcases: publicTestCases, // Not using test cases for now
+            private_testcases: privateTestCases, // Not using test cases for now
         };
 
         const body = {
@@ -312,11 +329,15 @@ const AddAssignmentPage = () => {
                                 Ngôn ngữ lập trình:
                                 <select
                                     value={selectedLanguage}
-                                    onChange={(e) => setSelectedLanguage(e.target.value)}
+                                    onChange={(e) => {
+                                        setSelectedLanguage(e.target.value);
+                                        const selectedLang = supportedLanguages.find(lang => lang.language === e.target.value);
+                                        setSelectedVersion(selectedLang.version); // Update version based on selected language
+                                    }}
                                 >
                                     {supportedLanguages.map((lang) => (
                                         <option key={lang.language} value={lang.language}>
-                                            {lang.language}
+                                            {lang.language} ({lang.version})
                                         </option>
                                     ))}
                                 </select>
@@ -329,7 +350,7 @@ const AddAssignmentPage = () => {
                                         onChange={setPreCode}
                                         language={selectedLanguage}
                                         theme="vs-dark"
-                                        height="400px"
+                                        height="200px"
                                     />
                                 </label>
                                 <label>
@@ -339,9 +360,89 @@ const AddAssignmentPage = () => {
                                         onChange={setNextCode}
                                         language={selectedLanguage}
                                         theme="vs-dark"
-                                        height="400px"
+                                        height="200px"
                                     />
                                 </label>
+                            </div>
+                            {/* Public Test Cases */}
+                            <div className="testcase-section">
+                                <h3>Testcase Công Khai</h3>
+                                {publicTestCases.map((testCase, index) => (
+                                    <div key={index} className="testcase-item">
+                                        <label>
+                                            Input:
+                                            <textarea
+                                                value={testCase.input}
+                                                onChange={(e) =>
+                                                    handleTestCaseChange(publicTestCases, setPublicTestCases, index, 'input', e.target.value)
+                                                }
+                                            />
+                                        </label>
+                                        <label>
+                                            Output:
+                                            <textarea
+                                                value={testCase.expected_output}
+                                                onChange={(e) =>
+                                                    handleTestCaseChange(publicTestCases, setPublicTestCases, index, 'expected_output', e.target.value)
+                                                }
+                                            />
+                                        </label>
+                                        <button
+                                            type="button"
+                                            className="remove-testcase-button"
+                                            onClick={() => handleRemoveTestCase(publicTestCases, setPublicTestCases, index)}
+                                        >
+                                            Xóa Testcase
+                                        </button>
+                                    </div>
+                                ))}
+                                <button
+                                    type="button"
+                                    className="add-testcase-button"
+                                    onClick={() => handleAddTestCase(publicTestCases, setPublicTestCases)}
+                                >
+                                    + Thêm Testcase
+                                </button>
+                            </div>
+                            {/* Private Test Cases */}
+                            <div className="testcase-section">
+                                <h3>Testcase Ẩn</h3>
+                                {privateTestCases.map((testCase, index) => (
+                                    <div key={index} className="testcase-item">
+                                        <label>
+                                            Input:
+                                            <textarea
+                                                value={testCase.input}
+                                                onChange={(e) =>
+                                                    handleTestCaseChange(privateTestCases, setPrivateTestCases, index, 'input', e.target.value)
+                                                }
+                                            />
+                                        </label>
+                                        <label>
+                                            Output:
+                                            <textarea
+                                                value={testCase.expected_output}
+                                                onChange={(e) =>
+                                                    handleTestCaseChange(privateTestCases, setPrivateTestCases, index, 'expected_output', e.target.value)
+                                                }
+                                            />
+                                        </label>
+                                        <button
+                                            type="button"
+                                            className="remove-testcase-button"
+                                            onClick={() => handleRemoveTestCase(privateTestCases, setPrivateTestCases, index)}
+                                        >
+                                            Xóa Testcase
+                                        </button>
+                                    </div>
+                                ))}
+                                <button
+                                    type="button"
+                                    className="add-testcase-button"
+                                    onClick={() => handleAddTestCase(privateTestCases, setPrivateTestCases)}
+                                >
+                                    + Thêm Testcase
+                                </button>
                             </div>
                         </div>
                     )}

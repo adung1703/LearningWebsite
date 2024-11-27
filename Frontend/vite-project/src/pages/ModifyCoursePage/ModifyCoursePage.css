@@ -111,7 +111,8 @@
 
 .add-chapter-button,
 .add-lesson-button,
-.update-course-button {
+.update-course-button,
+.manage-course-student-button {
     margin: 10px 0;
     padding: 8px 16px;
     background-color: #4caf50;
@@ -136,7 +137,8 @@
 
 .add-chapter-button:hover,
 .add-lesson-button:hover,
-.update-course-button:hover {
+.update-course-button:hover,
+.manage-course-student-button:hover {
     background-color: #45a049;
 }
 

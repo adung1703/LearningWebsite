@@ -99,6 +99,8 @@ const CoursePage = () => {
                         progress.lessons_completed.forEach(lessonId => {
                             progressStatus[lessonId] = true; // Mark as completed
                         });
+                    });
+                    progressData.data.progress.forEach(progress => {
                         progress.assignments_completed.forEach(assignmentId => {
                             progressStatus[assignmentId] = true; // Mark assignment as completed
                         });
@@ -155,11 +157,9 @@ const CoursePage = () => {
             {content.map((item, index) => {
                 const contentData = item.content_type === 'lesson' ? lessonDetails[item.lesson_id] : null;
                 const lessonType = contentData ? contentData.type : null;
-                const isCompleted = item.completed || courseProgress[item.lesson_id] || courseProgress[item.assignment_id];
-                const dataState = {
-                    chapterIndex,
-                    itemIndex: index
-                };
+                const assignmentId = item.assignment_id?._id || item.assignment_id; // Handle nested or direct ID
+                const isCompleted = item.completed || courseProgress[item.lesson_id] || courseProgress[assignmentId];
+                
                 return (
                     <li
                         key={item._id}
@@ -167,13 +167,12 @@ const CoursePage = () => {
                         className={`lesson-item ${isCompleted ? 'completed' : 'uncompleted'}`}
                     >
                         <Link to={item.content_type === 'assignment'
-                            ? `/assignment/${courseId}/${item.assignment_id}`
+                            ? `/assignment/${courseId}/${assignmentId}`
                             : `/lesson/${courseId}/${item.lesson_id}`}
-                            style={{ textDecoration: 'none', color: 'inherit' }}
-                            state={dataState}>
-
-                            {getIconForType(lessonType || item.content_type)} {/* Use the lesson type for icon */}
-                            <span>{item.content_type === 'assignment' ? 'Bài tập' : contentData ? contentData.title : `Lesson ${index + 1}`}</span>
+                            style={{ textDecoration: 'none', color: 'inherit' }}>
+    
+                            {getIconForType(lessonType || item.content_type)}
+                            <span>{item.content_type === 'assignment' ? 'Bài tập' : contentData?.title || `Lesson ${index + 1}`}</span>
                             {isCompleted && <span className="check-circle">&#10003;</span>}
                         </Link>
                     </li>
@@ -181,6 +180,7 @@ const CoursePage = () => {
             })}
         </ul>
     );
+    
 
     if (loading) return <div>Loading...</div>;
     if (error) return <div>Error: {error}</div>;

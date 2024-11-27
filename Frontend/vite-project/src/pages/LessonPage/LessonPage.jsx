@@ -14,9 +14,9 @@ const LessonPage = () => {
     const [progress, setProgress] = useState(null);
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(true);
-    const [isCompleted, setIsCompleted] = useState(false); // To track completion status
+    const [isCompleted, setIsCompleted] = useState(false); // Completion status
+    const [isPreviousChapterIncomplete, setIsPreviousChapterIncomplete] = useState(false); // Disable button if true
 
-    // Fetching the data
     useEffect(() => {
         const fetchLessonDetails = async () => {
             const token = localStorage.getItem('token'); 
@@ -87,6 +87,16 @@ const LessonPage = () => {
                         chapter.chapter_order === chapterOrder && chapter.lessons_completed.includes(lessonId)
                     );
                     setIsCompleted(completed); // Set completion status
+
+                    // Check previous chapter's status
+                    const previousChapter = data.data.progress.find(chap => chap.chapter_order === chapterOrder - 1);
+                    if (previousChapter) {
+                        const allLessonsCompleted =
+                            previousChapter.lessons_completed.length === course.chapters[chapterOrder - 2].content.length;
+                        if (previousChapter.status !== 'completed' || !allLessonsCompleted) {
+                            setIsPreviousChapterIncomplete(true);
+                        }
+                    }
                 } else {
                     setError(data.message);
                 }
@@ -95,14 +105,15 @@ const LessonPage = () => {
             }
         };
 
-        // Execute all fetching functions simultaneously
+        // Execute all fetching functions
         Promise.all([fetchLessonDetails(), fetchCourseDetails(), fetchProgressDetails()])
             .finally(() => setLoading(false));
 
     }, [courseId, lessonId, chapterOrder]);
 
-    // Handle Mark Complete Button Click
     const handleMarkComplete = async () => {
+        if (isPreviousChapterIncomplete) return; // Disable action if previous chapter is incomplete
+
         const token = localStorage.getItem('token');
         try {
             const response = await fetch(`http://localhost:3000/progress/complete-lesson/${courseId}/${lessonId}`, {
@@ -135,7 +146,6 @@ const LessonPage = () => {
                 <p>Course: {course.title}</p>
             </div>
             <div className="video-section">
-                {/* Embed the YouTube video */}
                 {lesson.url && (
                     <iframe
                         width="560"
@@ -153,9 +163,10 @@ const LessonPage = () => {
                     <button>View Course</button>
                 </Link>
                 <button
-                    className={`mark-complete ${isCompleted ? 'completed' : ''}`}
-                    onClick={!isCompleted ? handleMarkComplete : null}
-                    disabled={isCompleted}
+                    className={`mark-complete ${isCompleted ? 'completed' : ''} ${isPreviousChapterIncomplete ? 'disabled' : ''}`}
+                    onClick={!isCompleted && !isPreviousChapterIncomplete ? handleMarkComplete : null}
+                    disabled={isCompleted || isPreviousChapterIncomplete}
+                    title={isPreviousChapterIncomplete ? 'Cần hoàn thành mọi bài học của chương trước' : ''}
                 >
                     {isCompleted ? 'Completed' : 'Mark Complete'}
                 </button>
@@ -167,7 +178,7 @@ const LessonPage = () => {
                     <button className="next-lesson" disabled>Next Lesson</button>
                 )}
             </div>
-            <CommentsSection lessonId={lessonId} /> {/* Add CommentsSection here */}
+            <CommentsSection lessonId={lessonId} />
         </div>
     );
 };
