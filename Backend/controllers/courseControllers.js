@@ -85,9 +85,22 @@ exports.searchCourses = async (req, res) => {
 
 exports.findCourseByInstrutor = async (req, res) => {
     try {
-        const { instructorId } = req.params;
-        const courses = await Courses.find({ instructor: instructorId }).select('-chapters').populate('instructor', 'fullname avatar');               
-        res.status(200).json({ success: true, data: courses });
+        const { pageSize, pageNumber } = req.body;
+        let limit = parseInt(pageSize) || 10; // Số khóa học trên 1 trang
+        let skip = (parseInt(pageNumber) - 1) * limit; // Số khóa học đầu dãy bỏ qua
+        if (skip < 0) skip = 0;
+
+        const { id } = req.user; 
+        const myCourses = await Courses.find({instructor: id}).limit(limit).skip(skip).select('-chapters').populate('instructor', 'fullname avatar');
+        const totalCourses = await Courses.countDocuments({instructor: id});
+        
+        res.status(200).json({
+            success: true,
+            data: myCourses,
+            totalCourses,
+            totalPages: Math.ceil(totalCourses / limit),
+            currentPage: pageNumber
+        });
     } catch (error) {
         res.status(500).json({
             success: false,

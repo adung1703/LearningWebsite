@@ -7,7 +7,7 @@ const auth = require('../middlewares/authMiddleware.js');
 router.post('/all-courses', getCourses);
 router.get('/my-courses', auth, getMyCourses);
 router.get('/search-courses', searchCourses);
-router.get('/find-by-instructor/:instructorId', findCourseByInstrutor);
+router.post('/find-by-instructor/', auth, findCourseByInstrutor);
 router.get('/get-detail/:courseId', auth, getCourseDetail);
 router.post('/add-course', auth, addCourse);
 router.put('/update-course/:courseId', auth, updateCourse);
