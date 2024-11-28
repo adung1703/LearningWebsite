@@ -265,11 +265,11 @@ exports.addSubmission = async (req, res) => {
                 const answers = await Answers.findById(assignment.answers);
                 const { submission_content } = req.body;
                 console.log('content: ' + submission_content);
-                const userCode = `
-                    ${answers.pre_code}
-                    ${submission_content}
-                    ${answers.next_code}
-                `;
+const userCode = `
+${answers.pre_code}
+${submission_content}
+${answers.next_code}
+`;
 
                 console.log(userCode);
 

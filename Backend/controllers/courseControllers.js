@@ -83,6 +83,19 @@ exports.searchCourses = async (req, res) => {
     }
 };
 
+exports.findCourseByInstrutor = async (req, res) => {
+    try {
+        const { instructorId } = req.params;
+        const courses = await Courses.find({ instructor: instructorId }).select('-chapters').populate('instructor', 'fullname avatar');               
+        res.status(200).json({ success: true, data: courses });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: error.message
+        });
+    }
+};
+
 exports.getCourseDetail = async (req, res) => {
     try {
         const { courseId } = req.params;
