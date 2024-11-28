@@ -1,7 +1,7 @@
-const Submissions = require('../models/submissions.js');
-const Assignments = require('../models/assignments.js');
-const Answers = require('../models/answers.js');
-const Courses = require('../models/courses.js');
+const Submissions = require('../models/submissions');
+const Assignments = require('../models/assignments');
+const Answers = require('../models/answers');
+const Courses = require('../models/courses');
 const CourseProgresses = require('../models/course_progresses.js');
 const { S3Client, PutObjectCommand, DeleteObjectCommand } = require('@aws-sdk/client-s3'); // Import PutObjectCommand và DeleteObjectCommand
 const { s3Client, region } = require('../config/s3Config'); // Import cấu hình S3 và region
@@ -192,54 +192,31 @@ exports.addSubmission = async (req, res) => {
                 const existedSubmission = await Submissions.findOne({ assignmentId: assignmentId, userId: id });
                 let score = 0;
                 for (let i = 0; i < submission_content.length; i++) {
-
-                    if (answers.answer_content[i].toLowerCase() === submission_content[i]) score++;
+                    if (answers.answer_content[i].toLowerCase() === submission_content[i].toLowerCase()) {
+                        score++;
+                    }
                 }
 
-                let dec_score = score / answers.answer_content.length * 10.0;
+                let dec_score = (score / answers.answer_content.length) * 10.0;
+
                 if (existedSubmission) {
-                    if (existedSubmission.submit_count > 10) return res.status(400).json({ success: false, message: 'Bạn đã nộp bài quá 10 lần' });
-                    let score = 0;
+                    if (existedSubmission.submit_count > 10) {
+                        return res.status(400).json({ success: false, message: 'Bạn đã nộp bài quá 10 lần' });
+                    }
 
                     existedSubmission.submit_count++;
-                    if (!answers) {
-                        existedSubmission.submission_detail.push({
-                            content: submission_content
-                        });
-                        return res.status(200).json({ success: true, message: 'Đã nộp bài nhưng chưa có đáp án, hãy chờ thầy giáo chấm!' });
-                    }
-                    for (let i = 0; i < submission_content.length; i++) {
-                        if (answers.answer_content[i] === submission_content[i]) score++;
-                    }
-
-                    if (!existedSubmission.highest_score || dec_score > existedSubmission.highest_score) existedSubmission.highest_score = score;
-
                     existedSubmission.submission_detail.push({
                         content: submission_content,
                         score: dec_score
                     });
 
-                    await existedSubmission.save();
-                    console.log(1);
-
-                    resSubmission = existedSubmission;
-                    console.log("existedSubmission: " + resSubmission);
-                } else {
-                    if (!answers) {
-                        const newSubmission = await Submissions.create({
-                            assignmentId,
-                            userId: id,
-                            submit_count: 1,
-                            submission_detail: [{
-                                content: submission_content
-                            }]
-                        });
-                        newSubmission.save();
-                        return res.status(200).json({
-                            success: true, message: 'Đã nộp bài nhưng chưa có đáp án, hãy chờ thầy giáo chấm!'
-                        });
+                    if (!existedSubmission.highest_score || dec_score > existedSubmission.highest_score) {
+                        existedSubmission.highest_score = dec_score;
                     }
 
+                    await existedSubmission.save();
+                    resSubmission = existedSubmission;
+                } else {
                     const newSubmission = await Submissions.create({
                         assignmentId,
                         userId: id,
@@ -250,26 +227,26 @@ exports.addSubmission = async (req, res) => {
                         }],
                         highest_score: dec_score
                     });
-                    newSubmission.save();
+                    await newSubmission.save();
                     resSubmission = newSubmission;
                 }
-                // Trên 7/10 điểm thì hoàn thành bài tập
 
+                // Trên 7/10 điểm thì hoàn thành bài tập
                 if (dec_score >= 7) {
                     addChapterProgress(courseProgress, chapter_order);
                     updateProgress(courseProgress, chapter_order, assignmentId, courseOfAssignment);
                 }
-                console.log("Submission: " + resSubmission);
+
                 return res.status(200).json({ success: true, data: resSubmission });
             } else if (assignment.type === 'code') {
                 const answers = await Answers.findById(assignment.answers);
                 const { submission_content } = req.body;
                 console.log('content: ' + submission_content);
-const userCode = `
-${answers.pre_code}
-${submission_content}
-${answers.next_code}
-`;
+                const userCode = `
+                    ${answers.pre_code}
+                    ${submission_content}
+                    ${answers.next_code}
+                `;
 
                 console.log(userCode);
 
@@ -322,6 +299,8 @@ ${answers.next_code}
                         content: submission_content
                     });
                     await existedSubmission.save();
+                    addChapterProgress(courseProgress, chapter_order);
+                    updateProgress(courseProgress, chapter_order, assignmentId, courseOfAssignment);
                     return res.status(200).json({ success: true, data: existedSubmission });
                 } else {
                     const newSubmission = await Submissions.create({
@@ -365,6 +344,8 @@ ${answers.next_code}
                             content: fileUrl
                         });
                         await existedSubmission.save();
+                        addChapterProgress(courseProgress, chapter_order);
+                        updateProgress(courseProgress, chapter_order, assignmentId, courseOfAssignment);
                         return res.status(200).json({ success: true, data: existedSubmission });
                     } else {
                         const newSubmission = await Submissions.create({
@@ -376,6 +357,8 @@ ${answers.next_code}
                             }]
                         });
                         await newSubmission.save();
+                        addChapterProgress(courseProgress, chapter_order);
+                        updateProgress(courseProgress, chapter_order, assignmentId, courseOfAssignment);
                         return res.status(201).json({ success: true, data: newSubmission });
                     }
                 } catch (s3Error) {
