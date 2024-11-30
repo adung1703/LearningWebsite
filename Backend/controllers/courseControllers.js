@@ -161,7 +161,10 @@ exports.addCourse = [
 
             await course.save();
 
-            let imageUrl = `https://${params.Bucket}.s3.${region}.amazonaws.com/course-image/default-course-image.png`;
+            // Khai báo vùng và bucket
+            const region = 'ap-southeast-1';
+            const bucketName = 'learningwebsite-1';
+            let imageUrl = `https://${bucketName}.s3.${region}.amazonaws.com/course-image/default-course-image.png`;
 
             if (req.file) {
                 // Tạo tên file theo template chung với courseId
@@ -172,7 +175,7 @@ exports.addCourse = [
                 // Tải file lên S3
                 const fileContent = fs.readFileSync(req.file.path);
                 const params = {
-                    Bucket: 'learningwebsite-1',
+                    Bucket: bucketName,
                     Key: filename,
                     Body: fileContent,
                     ContentType: req.file.mimetype

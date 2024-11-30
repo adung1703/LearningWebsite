@@ -10,6 +10,8 @@ const lessonRoutes = require('./routes/lessonRoutes.js');
 const assignmentRoutes = require('./routes/assignmentRoutes.js');
 const submissionRoutes = require('./routes/submissionRoutes.js');
 const progressRoutes = require('./routes/progressRoutes.js');
+const adminRoutes = require('./routes/adminRoutes.js');
+const instructorRoutes = require('./routes/instructorRoutes.js');
 const s3 = require('./config/s3Config.js');
 
 // const DB_URI = 'mongodb+srv://adung1703:Adung_2003@cluster0.klijv.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0';
@@ -38,6 +40,8 @@ app.use('/lesson', lessonRoutes);
 app.use('/assignment', assignmentRoutes);
 app.use('/submission', submissionRoutes);
 app.use('/progress', progressRoutes);
+app.use('/admin', adminRoutes);
+app.use('/instructor', instructorRoutes);
 
 const port = process.env.PORT || 3000;
 
