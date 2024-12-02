@@ -175,7 +175,7 @@ const CoursePage = () => {
                     } else if (item.assignment_id.type.toString() === 'code') {
                         link = `/code-submission/${courseId}/${item.assignment_id._id}`;
                     } else {
-                        link = `/quiz-assignment/${courseId}/${item.assignment_id._id}`; // Các thể loại còn lại đều gom vào quiz
+                        link = `/file-upload-assignment/${courseId}/${item.assignment_id._id}`; // Các thể loại còn lại đều gom vào quiz
                     }
                 }
 

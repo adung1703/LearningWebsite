@@ -75,7 +75,7 @@ const Dashboard = () => {
     }, [currentPage]);
 
     const formatPrice = (price) => {
-        return price === 0 ? 'Miễn phí' : price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+        return (!price) ? 'Miễn phí' : price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
     };
 
     const handleSearch = async () => {
