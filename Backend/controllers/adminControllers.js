@@ -73,3 +73,26 @@ exports.getAllUsers = async (req, res) => {
         res.status(500).json({ success: false, message: 'Đã xảy ra lỗi khi lấy danh sách người dùng' });
     }
 }
+
+exports.getCoursesOfStudent = async (req, res) => {
+    try {
+        const role = req.user.role;
+        if (role !== 'admin') {
+            return res.status(403).json({ success: false, message: 'Bạn không có quyền truy cập' });
+        }
+        const {studentId} = req.params;
+        if (!studentId) {
+            return res.status(400).json({ success: false, message: 'Thiếu thông tin người dùng' });
+        }
+
+        const courses = await Users.findById(studentId).select('coursesJoined').populate({
+            path: 'coursesJoined',
+            select: '-chapters'
+        });
+
+        res.status(200).json({ success: true, courses });
+    } catch (error) {
+        console.error('Lỗi khi lấy danh sách khóa học:', error);
+        res.status(500).json({ success: false, message: 'Đã xảy ra lỗi khi lấy danh sách khóa học' });
+    }
+}
