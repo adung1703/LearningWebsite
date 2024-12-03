@@ -111,6 +111,7 @@ exports.findCourseByInstrutor = async (req, res) => {
 
 exports.getCourseDetail = async (req, res) => {
     try {
+        const { id } = req.user;
         const { courseId } = req.params;
         const { coursesJoined } = await Users.findById(req.user.id).select('coursesJoined');
 
@@ -127,7 +128,7 @@ exports.getCourseDetail = async (req, res) => {
             return res.status(404).json({ success: false, message: 'Không tìm thấy khóa học' });
         }
 
-        if (!coursesJoined.includes(courseId) && req.user.role !== 'admin' && req.user.id !== course.instructor.toString()) {
+        if (!coursesJoined.includes(courseId) && req.user.role !== 'admin' && id !== course.instructor.id) {
             return res.status(403).json({ success: false, message: 'Không có quyền truy cập khóa học này' });
         }
 

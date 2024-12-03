@@ -117,6 +117,10 @@ exports.getLesson = async (req, res) => {
     try {
         const { role, coursesJoined, id } = req.user;
         const { courseId, lessonId } = req.params;
+        const course = await Courses.findById(courseId);
+        if (!course) {
+            return res.status(404).json({ success: false, message: 'Không tìm thấy khóa học' });
+        }
         if (role !== 'admin' && id !== course.instructor.toString() && !coursesJoined.includes(courseId)) {
             return res.status(403).json({ success: false, message: 'Bạn không có quyền xem bài học' });
         }
