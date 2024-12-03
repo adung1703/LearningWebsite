@@ -16,6 +16,10 @@ import AddCoursePage from './pages/AddCoursePage/AddCoursePage.jsx';
 import UpdateCoursePage from './pages/UpdateCoursePage/UpdateCoursePage.jsx';
 import ManageCourseStudentPage from './pages/ManageCourseStudentPage/ManageCourseStudentPage.jsx';
 import StudentProgressPage from './pages/StudentProgressPage/StudentProgressPage.jsx';
+import FileUploadAssignment from './pages/FileUploadAssignment/FileUploadAssignment.jsx';
+import InstructorManagementPage from './pages/InstructorManagementPage/InstructorManagermentPage.jsx';
+import CourseManagementPage from './pages/CourseManagementPage/CourseManagementPage.jsx';
+import AllStudentPage from './pages/AllStudent/AllStudentPage.jsx';
 
 function App() {
   const [count, setCount] = useState(0);
@@ -36,8 +40,12 @@ function App() {
         <Route path="/update-course/:courseId" element={<UpdateCoursePage />} /> 
         <Route path="/manage-course-student/:courseId" element={<ManageCourseStudentPage />} /> 
         <Route path="/student-progress/:courseId/:userId" element={<StudentProgressPage />} /> 
-        <Route path="/code-submission" element={<CodeSubmissionPage />} /> 
-        <Route path="/assignment/:courseId/:assignmentId" element={<QuizAssignment />} />
+        <Route path="/code-submission/:courseId/:assignmentId" element={<CodeSubmissionPage />} /> 
+        <Route path="/quiz-assignment/:courseId/:assignmentId" element={<QuizAssignment />} />
+        <Route path="/file-upload-assignment/:courseId/:assignmentId" element={<FileUploadAssignment />} />
+        <Route path="/instructors" element={<InstructorManagementPage />} /> {/*Dành cho admin */} 
+        <Route path="/students-management" element={<AllStudentPage />} /> {/*Dành cho admin */}
+        <Route path="/courses-managerment" element={<CourseManagementPage/>}></Route> {/*Dành cho instructor */}
       </Routes>
     </Router>
   );

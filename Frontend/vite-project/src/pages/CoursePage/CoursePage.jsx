@@ -3,6 +3,7 @@ import { Link, useLocation, useParams } from 'react-router-dom';
 import Navbar from '../../components/Navbar/Navbar';
 import './CoursePage.css';
 import { FaBook, FaVideo, FaQuestionCircle } from 'react-icons/fa';
+import axios from 'axios';
 
 const CoursePage = () => {
     const { courseId } = useParams();
@@ -151,28 +152,47 @@ const CoursePage = () => {
             default: return null;
         }
     };
-
+    
     const renderContent = (content, chapterIndex) => (
         <ul className="lessons-list">
             {content.map((item, index) => {
                 const contentData = item.content_type === 'lesson' ? lessonDetails[item.lesson_id] : null;
                 const lessonType = contentData ? contentData.type : null;
-                const assignmentId = item.assignment_id?._id || item.assignment_id; // Handle nested or direct ID
-                const isCompleted = item.completed || courseProgress[item.lesson_id] || courseProgress[assignmentId];
-                
+                const isCompleted = item.completed || 
+                            courseProgress[item.lesson_id] || 
+                            (item.assignment_id && courseProgress[item.assignment_id._id]);
+                const dataState = {
+                    chapterIndex,
+                    itemIndex: index,
+                    detail: null
+                };
+
+                let link = ``;
+                if (item.content_type === 'lesson') {
+                    link = `/lesson/${courseId}/${item.lesson_id}`;
+                } else {
+                    if (!item.assignment_id) link = '#';
+                    else if (item.assignment_id.type.toString() === 'quiz') {
+                        link = `/quiz-assignment/${courseId}/${item.assignment_id._id}`;
+                    } else if (item.assignment_id.type.toString() === 'code') {
+                        link = `/code-submission/${courseId}/${item.assignment_id._id}`;
+                    } else {
+                        link = `/file-upload-assignment/${courseId}/${item.assignment_id._id}`; // Các thể loại còn lại đều gom vào quiz
+                    }
+                }
+
                 return (
                     <li
                         key={item._id}
                         id={item._id}
                         className={`lesson-item ${isCompleted ? 'completed' : 'uncompleted'}`}
                     >
-                        <Link to={item.content_type === 'assignment'
-                            ? `/assignment/${courseId}/${assignmentId}`
-                            : `/lesson/${courseId}/${item.lesson_id}`}
-                            style={{ textDecoration: 'none', color: 'inherit' }}>
-    
-                            {getIconForType(lessonType || item.content_type)}
-                            <span>{item.content_type === 'assignment' ? 'Bài tập' : contentData?.title || `Lesson ${index + 1}`}</span>
+                        <Link to={link}
+                            style={{ textDecoration: 'none', color: 'inherit' }}
+                            state={dataState}>
+
+                            {getIconForType(lessonType || item.content_type)} {/* Use the lesson type for icon */}
+                            <span>{item.content_type === 'assignment' ? 'Bài tập' : contentData ? contentData.title : `Lesson ${index + 1}`}</span>
                             {isCompleted && <span className="check-circle">&#10003;</span>}
                         </Link>
                     </li>

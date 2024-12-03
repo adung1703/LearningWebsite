@@ -38,10 +38,15 @@ const Navbar = () => {
   useEffect(() => {
     // Hàm đóng dropdown khi click ra ngoài
     const handleClickOutside = (event) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-        setDropdownOpen(false); // Đóng dropdown nếu click ra ngoài
+      // Nếu click không nằm trong dropdown hoặc nút avatar
+      if (
+        dropdownRef.current && 
+        !dropdownRef.current.contains(event.target) && 
+        event.target.id !== 'user-menu-button'
+      ) {
+        setDropdownOpen(false); // Đóng dropdown
       }
-    };
+    };    
 
     // Thêm event listener nếu dropdown đang mở
     if (isDropdownOpen) {
@@ -55,9 +60,10 @@ const Navbar = () => {
   }, [isDropdownOpen, navigate]);
 
   // Toggle dropdown
-  const toggleDropdown = () => {
-    setDropdownOpen(!isDropdownOpen);
-  };
+  const toggleDropdown = (event) => {
+    event.stopPropagation(); // Ngăn chặn sự kiện click lan đến document
+    setDropdownOpen((prev) => !prev); // Đảo ngược trạng thái dropdown
+  };  
 
   const handleSignOut = () => {
     localStorage.removeItem('token');
@@ -94,6 +100,7 @@ const Navbar = () => {
           {/* Dropdown menu */}
           {isDropdownOpen && (
             <div
+              ref={dropdownRef}
               className="z-50 absolute top-full right-0 mt-2 w-48 text-base list-none bg-white divide-y divide-gray-100 rounded-lg shadow dark:bg-gray-700 dark:divide-gray-600"
               id="user-dropdown"
             >
@@ -114,7 +121,7 @@ const Navbar = () => {
                 </li>
                 <li>
                   <Link
-                    to="/settings"
+                    to="/profile"
                     className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white"
                   >
                     Settings
@@ -160,22 +167,33 @@ const Navbar = () => {
                 Dashboard
               </Link>
             </li>
-            <li>
+            {(user && user.role === 'admin') && 
+            (<li>
               <Link
-                to="/services"
-                className={`block py-2 px-3 ${isActiveLink('/services')}`}
+                to="/instructors"
+                className={`block py-2 px-3 ${isActiveLink('/instructors')}`}
               >
-                Services
+                Instructors
               </Link>
-            </li>
-            <li>
+            </li>)}
+            {user && (user.role === 'instructor') &&
+              (<li>
               <Link
-                to="/pricing"
-                className={`block py-2 px-3 ${isActiveLink('/pricing')}`}
+                to="/courses-managerment"
+                className={`block py-2 px-3 ${isActiveLink('/courses-managerment')}`}
               >
-                Pricing
+                My Courses
               </Link>
-            </li>
+            </li>)}
+            {user && (user.role === 'admin') &&
+              (<li>
+              <Link
+                to="/students-management"
+                className={`block py-2 px-3 ${isActiveLink('/students-management')}`}
+              >
+                All Students
+              </Link>
+            </li>)}
             <li>
               <Link
                 to="/contact"
