@@ -8,6 +8,7 @@ const SignUp = () => {
   const [phoneNumber, setPhoneNumber] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [role, setRole] = useState('student');
   const [errorMessage, setErrorMessage] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
   const navigate = useNavigate(); // Hook to navigate
@@ -39,6 +40,7 @@ const SignUp = () => {
           email,
           phoneNumber,
           password,
+          role,
         }),
       });
 
@@ -141,6 +143,19 @@ const SignUp = () => {
             />
           </div>
 
+          <div style={styles.inputGroup}>
+            <label style={styles.label}>Vai trò</label>
+            <select
+              style={styles.input}
+              value={role}
+              onChange={(e) => setRole(e.target.value)}
+              required
+            >
+              <option value="student">Học viên</option>
+              <option value="instructor">Giảng viên</option>
+            </select>
+          </div>
+          
           {errorMessage && <p style={{ color: 'red' }}>{errorMessage}</p>}
           {successMessage && <p style={{ color: 'green' }}>{successMessage}</p>}
 

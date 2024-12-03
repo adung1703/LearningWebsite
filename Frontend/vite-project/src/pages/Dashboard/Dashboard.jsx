@@ -340,44 +340,6 @@ const Dashboard = () => {
                     )}
                 </div>
             </div>
-            
-            {userInfo && (userInfo.role === 'instructor' || userInfo.role === 'admin') && (
-                <div className="courses-container">
-                    <h2>Khóa học đang quản lý</h2>
-                    <div className="courses-section">
-                        {courses.length > 0 ? (
-                            <div className="courses-grid">
-                                {courses.map((course) => (
-                                    <div key={course._id} className="course-item">
-                                        <img
-                                            src={course.image}
-                                            alt={course.title}
-                                            className="course-image"
-                                        />
-                                        <h3 className="course-title">{course.title}</h3>
-                                        <p className="price">{formatPrice(course.price)}</p>
-                                        <div className="instructor">
-                                            <img
-                                                src={course.instructor.avatar}
-                                                alt="Instructor Avatar"
-                                                className="instructor-avatar"
-                                            />
-                                            <span className="instructor-name">{course.instructor.fullname}</span>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        ) : (
-                            <p>Bạn chưa quản lý khóa học nào.</p>
-                        )}
-                    </div>
-                    <button 
-                        className="add-course-button" 
-                        onClick={() => navigate('/add-course')}>
-                        Thêm khóa học
-                    </button>
-                </div>
-            )}
 
 
             {modalVisible && selectedCourse && (

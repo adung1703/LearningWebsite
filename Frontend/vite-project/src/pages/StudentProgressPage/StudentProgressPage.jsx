@@ -1,122 +1,202 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import Navbar from '../../components/Navbar/Navbar';
-import { FaQuestionCircle, FaPenAlt, FaCode, FaFileAlt } from 'react-icons/fa';
+import { FaQuestionCircle, FaPenAlt, FaCode, FaFileAlt, FaEdit } from 'react-icons/fa';
+import axios from 'axios';
 import './StudentProgressPage.css';
 
 const StudentProgressPage = () => {
     const { courseId, userId } = useParams();
-    const navigate = useNavigate();
-
-    const [chapters, setChapters] = useState([]);
+    const [assignments, setAssignments] = useState([]);
     const [selectedAssignment, setSelectedAssignment] = useState(null);
+    const [submissionDetails, setSubmissionDetails] = useState(null);
     const [showModal, setShowModal] = useState(false);
+    const [errorMessage, setErrorMessage] = useState(null);
+    const [grade, setGrade] = useState('');
+    const [modalErrorMessage, setModalErrorMessage] = useState(null);
+
+    const token = localStorage.getItem('token');
 
     useEffect(() => {
-        // Fetch chapters and assignments data (mock data for now)
-        setChapters([
-            {
-                title: 'Chapter 1',
-                assignments: [
-                    { name: 'Quiz 1', type: 'quiz', status: 'completed' },
-                    { name: 'Assignment 1', type: 'assignment', status: 'pending' },
-                    { name: 'Code Task 1', type: 'code', status: 'uncompleted' },
-                ],
-            },
-            {
-                title: 'Chapter 2',
-                assignments: [
-                    { name: 'Quiz 2', type: 'quiz', status: 'uncompleted' },
-                    { name: 'Writing Task', type: 'assignment', status: 'pending' },
-                    { name: 'Code Challenge', type: 'code', status: 'completed' },
-                ],
-            },
-        ]);
-    }, []);
+        const fetchSubmissions = async () => {
+            try {
+                const { data } = await axios.get(
+                    `http://localhost:3000/instructor/all-submission/${courseId}/${userId}`,
+                    { headers: { 'Auth-Token': token } }
+                );
 
-    const getStatusClass = (status) => {
-        switch (status) {
-            case 'completed':
-                return 'status-completed';
-            case 'uncompleted':
-                return 'status-uncompleted';
-            case 'pending':
-                return 'status-pending';
-            default:
-                return '';
-        }
-    };
+                if (data.success) {
+                    const submissions = data.submissions;
+                    const detailedAssignments = await Promise.all(
+                        submissions.map(async (submission) => {
+                            try {
+                                const { data: assignmentData } = await axios.get(
+                                    `http://localhost:3000/assignment/get-assignment/${submission.assignmentId}`,
+                                    { headers: { 'Auth-Token': token } }
+                                );
+                                return {
+                                    id: submission.assignmentId,
+                                    title: assignmentData.data.title,
+                                    type: assignmentData.data.type,
+                                    submission: submission.submission,
+                                    status: submission.submission ? 'completed' : 'uncompleted',
+                                };
+                            } catch (error) {
+                                console.error(`Error fetching assignment ${submission.assignmentId}:`, error);
+                                return null; // Skip this assignment if fetching fails
+                            }
+                        })
+                    );
+
+                    // Filter out any null entries
+                    setAssignments(detailedAssignments.filter((assignment) => assignment !== null));
+                }
+            } catch (error) {
+                console.error('Error fetching submissions:', error);
+            }
+        };
+
+        fetchSubmissions();
+    }, [courseId, userId, token]);
 
     const getIcon = (type) => {
         switch (type) {
             case 'quiz':
                 return <FaQuestionCircle />;
-            case 'assignment':
-                return <FaPenAlt />;
+            case 'file-upload':
+                return <FaFileAlt />;
             case 'code':
                 return <FaCode />;
+            case 'plaintext':
+                return <FaPenAlt />;
             case 'fill':
-                return <FaFileAlt />;
+                return <FaEdit />;
             default:
                 return null;
         }
     };
 
-    const openGradingModal = (assignment) => {
+    const openGradingModal = async (assignment) => {
+        setErrorMessage(null); // Reset any previous error messages
+        setModalErrorMessage(null); // Reset modal error messages
         setSelectedAssignment(assignment);
-        setShowModal(true);
+
+        // Check for null submission
+        if (!assignment.submission || !assignment.submission._id) {
+            setErrorMessage('Sinh viên chưa nộp bài');
+            return;
+        }
+
+        try {
+            const { data } = await axios.get(
+                `http://localhost:3000/instructor/detail-submission/${assignment.submission._id}`,
+                { headers: { 'Auth-Token': token } }
+            );
+
+            if (data.success) {
+                // Select the latest submission
+                const latestSubmission = data.submission.submission_detail[data.submission.submission_detail.length - 1];
+
+                setSubmissionDetails({
+                    question: data.submission.assignmentId.questions[0].question_content,
+                    answerUrl: latestSubmission.content[0], // Assuming the first content is the desired URL
+                });
+
+                setShowModal(true);
+            }
+        } catch (error) {
+            console.error('Error fetching submission details:', error);
+        }
+    };
+
+    const handleConfirm = async () => {
+        // Validate grade
+        const parsedGrade = parseFloat(grade);
+        if (isNaN(parsedGrade) || parsedGrade < 0 || parsedGrade > 10) {
+            setModalErrorMessage('Điểm phải là số từ 0 đến 10');
+            return;
+        }
+
+        // Submit grade
+        try {
+            const { data } = await axios.put(
+                `http://localhost:3000/instructor/score/${selectedAssignment.submission._id}`,
+                { score: parsedGrade },
+                { headers: { 'Auth-Token': token } }
+            );
+
+            if (data.success) {
+                alert('Chấm điểm thành công!');
+                setTimeout(() => {
+                    window.location.reload();
+                }, 500);
+            } else {
+                setModalErrorMessage('Lỗi khi chấm điểm. Vui lòng thử lại.');
+            }
+        } catch (error) {
+            console.error('Error submitting grade:', error);
+            setModalErrorMessage('Lỗi khi chấm điểm. Vui lòng thử lại.');
+        }
     };
 
     const closeModal = () => {
         setShowModal(false);
         setSelectedAssignment(null);
+        setSubmissionDetails(null);
+        setModalErrorMessage(null);
+        setGrade('');
     };
 
     return (
         <div className="StudentProgressPage">
             <Navbar />
             <h1>Student Progress</h1>
-            <div className="chapters-container">
-                {chapters.map((chapter, index) => (
-                    <div className="chapter" key={index}>
-                        <h2>{chapter.title}</h2>
-                        <ul className="assignments-list">
-                            {chapter.assignments.map((assignment, idx) => (
-                                <li
-                                    className={`assignment-item ${getStatusClass(assignment.status)}`}
-                                    key={idx}
-                                >
-                                    <span className="assignment-icon">{getIcon(assignment.type)}</span>
-                                    <span className="assignment-name">{assignment.name}</span>
-                                    {assignment.type === 'assignment' && assignment.status === 'pending' && (
-                                        <button
-                                            className="grade-button"
-                                            onClick={() => openGradingModal(assignment)}
-                                        >
-                                            Chấm điểm
-                                        </button>
-                                    )}
-                                </li>
-                            ))}
-                        </ul>
+            <div className="assignments-container">
+                {assignments.map((assignment, index) => (
+                    <div className={`assignment-item ${assignment.status}`} key={index}>
+                        <span className="assignment-icon">{getIcon(assignment.type)}</span>
+                        <span className="assignment-name">{assignment.title}</span>
+                        {(assignment.type === 'file-upload' || assignment.type === 'plaintext') && (
+                            <button
+                                className="grade-button"
+                                onClick={() => openGradingModal(assignment)}
+                            >
+                                Chấm điểm
+                            </button>
+                        )}
                     </div>
                 ))}
             </div>
 
-            {showModal && selectedAssignment && (
+            {errorMessage && <div className="error-message">{errorMessage}</div>}
+
+            {showModal && selectedAssignment && submissionDetails && (
                 <div className="modal-overlay">
                     <div className="modal">
-                        <h3>Grading: {selectedAssignment.name}</h3>
+                        <h3>Grading: {selectedAssignment.title}</h3>
                         <div className="modal-content">
                             <label>Question</label>
-                            <textarea readOnly value="Example question text..." />
-                            <label>Answer</label>
-                            <textarea readOnly value="Example answer text..." />
-                            <button className="view-url-button">View Answer URL</button>
+                            <textarea readOnly value={submissionDetails.question} />
+                            <label>Answer Preview</label>
+                            <button
+                                className="view-url-button"
+                                onClick={() => window.open(submissionDetails.answerUrl, '_blank')}
+                            >
+                                View Answer URL
+                            </button>
                             <label>Nhập điểm</label>
-                            <input type="number" placeholder="Enter score" />
-                            <button className="confirm-button" onClick={closeModal}>
+                            <input
+                                type="number"
+                                placeholder="Enter score"
+                                value={grade}
+                                onChange={(e) => setGrade(e.target.value)}
+                            />
+                            {modalErrorMessage && <div className="modal-error-message">{modalErrorMessage}</div>}
+                            <button className="confirm-button" onClick={handleConfirm}>
                                 Xác nhận
+                            </button>
+                            <button className="close-modal-button" onClick={closeModal}>
+                                Đóng
                             </button>
                         </div>
                     </div>

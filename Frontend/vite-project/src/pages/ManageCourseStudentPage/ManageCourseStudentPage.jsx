@@ -7,58 +7,52 @@ const ManageCourseStudentPage = () => {
     const { courseId } = useParams(); // Get the course ID from the URL
     const navigate = useNavigate();
     const [students, setStudents] = useState([]); // State to hold the list of students
+    const [error, setError] = useState(null); // State to handle errors
 
     useEffect(() => {
-        // Mock student data
-        const mockStudents = [
-            {
-                id: '123',
-                name: 'Nguyen Van A',
-                email: 'nguyenvana@example.com',
-                joinedDate: '2024-11-01',
-                progress: 85,
-                avatar: 'https://via.placeholder.com/80' // Placeholder avatar URL
-            },
-            {
-                id: '124',
-                name: 'Tran Thi B',
-                email: 'tranthib@example.com',
-                joinedDate: '2024-10-15',
-                progress: 78,
-                avatar: 'https://via.placeholder.com/80'
-            },
-            {
-                id: '125',
-                name: 'Le Minh C',
-                email: 'leminhc@example.com',
-                joinedDate: '2024-09-10',
-                progress: 92,
-                avatar: 'https://via.placeholder.com/80'
-            },
-            {
-                id: '125',
-                name: 'Le Minh C',
-                email: 'leminhc@example.com',
-                joinedDate: '2024-09-10',
-                progress: 92,
-                avatar: 'https://via.placeholder.com/80'
-            },
-            {
-                id: '125',
-                name: 'Le Minh C',
-                email: 'leminhc@example.com',
-                joinedDate: '2024-09-10',
-                progress: 92,
-                avatar: 'https://via.placeholder.com/80'
-            }
-        ];
+        const fetchStudents = async () => {
+            try {
+                const token = localStorage.getItem('token'); // Get the Auth-Token from localStorage
+                if (!token) throw new Error('Auth token is missing.');
 
-        // Set mock data to the students state
-        setStudents(mockStudents);
+                const response = await fetch(`http://localhost:3000/instructor/students/${courseId}`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Auth-Token': token,
+                    },
+                });
+
+                const data = await response.json();
+
+                if (!data.success) throw new Error('Failed to fetch students.');
+
+                // Calculate progress for each student
+                const studentsData = data.studentsProgress.map(student => {
+                    const totalChapters = student.progress.length;
+                    const completedChapters = student.progress.filter(chapter => chapter.status === 'completed').length;
+                    const progressPercentage = Math.round((completedChapters / totalChapters) * 100);
+
+                    return {
+                        id: student.userId._id,
+                        name: student.userId.name || 'Unknown', // Use "Unknown" if name is not provided
+                        email: student.userId.email,
+                        joinedDate: new Date(student.last_update).toLocaleDateString(),
+                        progress: progressPercentage,
+                        avatar: 'https://via.placeholder.com/80', // Placeholder for avatar
+                    };
+                });
+
+                setStudents(studentsData);
+            } catch (error) {
+                setError(error.message);
+            }
+        };
+
+        fetchStudents();
     }, [courseId]);
 
     const handleStudentClick = (userId) => {
-        // Navigate to the student progress page
         navigate(`/student-progress/${courseId}/${userId}`);
     };
 
@@ -66,6 +60,7 @@ const ManageCourseStudentPage = () => {
         <div className="ManageCourseStudentPage">
             <Navbar />
             <h1>Danh sách học viên</h1>
+            {error && <div className="error-message">{error}</div>}
             <div className="student-list">
                 {students.map(student => (
                     <div
@@ -74,9 +69,7 @@ const ManageCourseStudentPage = () => {
                         onClick={() => handleStudentClick(student.id)}
                     >
                         <div className="student-header">
-                            <img src={student.avatar} alt={`${student.name}'s avatar`} className="student-avatar" />
                             <div className="student-info">
-                                <div className="student-name">{student.name}</div>
                                 <div className="student-email">{student.email}</div>
                             </div>
                         </div>
@@ -89,7 +82,7 @@ const ManageCourseStudentPage = () => {
                                 ></div>
                             </div>
                         </div>
-                        <div className="student-date">Ngày tham gia: {new Date(student.joinedDate).toLocaleDateString()}</div>
+                        <div className="student-date">Ngày tham gia: {student.joinedDate}</div>
                     </div>
                 ))}
             </div>

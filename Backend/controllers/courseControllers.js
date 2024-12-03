@@ -83,6 +83,32 @@ exports.searchCourses = async (req, res) => {
     }
 };
 
+exports.findCourseByInstrutor = async (req, res) => {
+    try {
+        const { pageSize, pageNumber } = req.body;
+        let limit = parseInt(pageSize) || 10; // Số khóa học trên 1 trang
+        let skip = (parseInt(pageNumber) - 1) * limit; // Số khóa học đầu dãy bỏ qua
+        if (skip < 0) skip = 0;
+
+        const { id } = req.user; 
+        const myCourses = await Courses.find({instructor: id}).limit(limit).skip(skip).select('-chapters').populate('instructor', 'fullname avatar');
+        const totalCourses = await Courses.countDocuments({instructor: id});
+        
+        res.status(200).json({
+            success: true,
+            data: myCourses,
+            totalCourses,
+            totalPages: Math.ceil(totalCourses / limit),
+            currentPage: pageNumber
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: error.message
+        });
+    }
+};
+
 exports.getCourseDetail = async (req, res) => {
     try {
         const { courseId } = req.params;
@@ -101,7 +127,7 @@ exports.getCourseDetail = async (req, res) => {
             return res.status(404).json({ success: false, message: 'Không tìm thấy khóa học' });
         }
 
-        if (!coursesJoined.includes(courseId) && req.user.role !== 'admin' && req.user.id !== course.instructor.toString()) {
+        if (!coursesJoined.includes(courseId) && req.user.role !== 'admin' && req.user.id !== course.instructor.id) {
             return res.status(403).json({ success: false, message: 'Không có quyền truy cập khóa học này' });
         }
 
@@ -135,7 +161,10 @@ exports.addCourse = [
 
             await course.save();
 
-            let imageUrl = `https://${params.Bucket}.s3.${region}.amazonaws.com/course-image/default-course-image.png`;
+            // Khai báo vùng và bucket
+            const region = 'ap-southeast-1';
+            const bucketName = 'learningwebsite-1';
+            let imageUrl = `https://${bucketName}.s3.${region}.amazonaws.com/course-image/default-course-image.png`;
 
             if (req.file) {
                 // Tạo tên file theo template chung với courseId
@@ -146,7 +175,7 @@ exports.addCourse = [
                 // Tải file lên S3
                 const fileContent = fs.readFileSync(req.file.path);
                 const params = {
-                    Bucket: 'learningwebsite-1',
+                    Bucket: bucketName,
                     Key: filename,
                     Body: fileContent,
                     ContentType: req.file.mimetype

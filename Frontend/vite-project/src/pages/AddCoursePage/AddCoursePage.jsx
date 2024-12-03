@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './AddCoursePage.css';
 import Navbar from '../../components/Navbar/Navbar';
+import axios from "axios";
 
 const AddCoursePage = () => {
     const [title, setTitle] = useState('');
@@ -44,7 +45,11 @@ const AddCoursePage = () => {
     const handleImageChange = (event) => {
         const file = event.target.files[0];
         if (file) {
-            setSelectedImage(file);
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                setSelectedImage(e.target.result); // Store the file content
+            };
+            reader.readAsDataURL(file);
         }
     };
 
@@ -75,20 +80,20 @@ const AddCoursePage = () => {
         formData.append('price', parsedPrice);
         formData.append('instructor', instructorId);
         if (selectedImage) {
-            formData.append('image', selectedImage);
+            const fileBlob = new Blob([selectedImage], { type: 'text/html' });
+            formData.append('image', new File([fileBlob], 'course-image.html'));
         }
 
         try {
             const token = localStorage.getItem('token');
-            const response = await fetch('http://localhost:3000/course/add-course', {
-                method: 'POST',
+            const response = await axios.post("http://localhost:3000/course/add-course", formData, {
                 headers: {
-                    'Auth-Token': token,
+                    "Auth-Token": token,
+                    "Content-Type": "multipart/form-data",
                 },
-                body: formData,
             });
 
-            const data = await response.json();
+            const data = await response.data;
             if (data.success) {
                 alert('Thêm khóa học thành công!');
                 navigate('/dashboard');

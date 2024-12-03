@@ -174,8 +174,7 @@ const CourseManagementPage = () => {
     const [searchKeyword, setSearchKeyword] = useState('');
 
     const handleCourseClick = (course) => {
-        setSelectedCourse(course);  // Set the selected course data
-        setModalVisible(true);       // Show the modal
+        navigate(`/modify-course/${course._id}`);    
     };
     useEffect(() => {
         const fetchMyCourses = async () => {
@@ -290,7 +289,13 @@ const CourseManagementPage = () => {
                             </button>
                         ))}
                     </div>
+                    <button 
+                        className="add-course-button" 
+                        onClick={() => navigate('/add-course')}>
+                        Thêm khóa học
+                    </button>
                 </div>
+                
             </div>
         </div>
     );

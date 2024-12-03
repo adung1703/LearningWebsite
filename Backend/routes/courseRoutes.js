@@ -1,12 +1,13 @@
 const express = require('express');
 const router = express.Router();
 
-const { getCourses, getMyCourses, searchCourses, getCourseDetail, addCourse, updateCourse, deleteCourse, addChapter, updateChapter, deleteChapter } = require('../controllers/courseControllers.js');
+const { getCourses, getMyCourses, searchCourses, findCourseByInstrutor, getCourseDetail, addCourse, updateCourse, deleteCourse, addChapter, updateChapter, deleteChapter } = require('../controllers/courseControllers.js');
 const auth = require('../middlewares/authMiddleware.js');
 
 router.post('/all-courses', getCourses);
 router.get('/my-courses', auth, getMyCourses);
 router.get('/search-courses', searchCourses);
+router.post('/find-by-instructor/', auth, findCourseByInstrutor);
 router.get('/get-detail/:courseId', auth, getCourseDetail);
 router.post('/add-course', auth, addCourse);
 router.put('/update-course/:courseId', auth, updateCourse);

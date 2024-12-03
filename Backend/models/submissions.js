@@ -27,7 +27,7 @@ const submissionSchema = new mongoose.Schema({
             },
             submit_at: {
                 type: Date,
-                default: Date.now()
+                default: Date.now
             },
             score: Number
         }]
