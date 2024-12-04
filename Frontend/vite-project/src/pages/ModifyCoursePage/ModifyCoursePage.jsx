@@ -4,6 +4,7 @@ import Navbar from '../../components/Navbar/Navbar';
 import './ModifyCoursePage.css';
 import { FaBook, FaQuestionCircle, FaVideo } from 'react-icons/fa';
 import Modal from 'react-modal';
+import axios from "axios";
 
 Modal.setAppElement('#root');
 
@@ -245,58 +246,48 @@ const ModifyCoursePage = () => {
             setError('Không thể xóa khóa học.');
         }
     };
+
     const addLesson = async () => {
-        const { title, description, type, chapterOrder } = newLessonData;
-        let url = newLessonData.url; // Default URL for video
-    
-        // If lesson type is "document" and a PDF file is selected, upload it
-        if (type === 'document' && pdfFile) {
-            try {
-                url = await uploadFileToCloudinary(pdfFile); // Upload PDF and get URL
-            } catch (error) {
-                return; // Return early if upload fails
-            }
-        }
-    
-        // Check if any required field is empty
-        if (!title || !description || !url) {
-            setError('Vui lòng điền đầy đủ thông tin.');
-            return;
-        }
-    
+        const { title, description, type, chapterOrder, url } = newLessonData;
         const token = localStorage.getItem('token');
+
+        // Create form data to send the request
+        const formData = new FormData();
+        formData.append('chapter_number', chapterOrder); // Chapter number
+        formData.append('lesson[course]', courseId); // Course ID
+        formData.append('lesson[title]', title); // Lesson title
+        formData.append('lesson[description]', description); // Lesson description
+        formData.append('lesson[type]', type); // Lesson type
+        
+        // If it's a document lesson, add the file to formData
+        if (type === 'document' && pdfFile) {
+            formData.append('document', pdfFile); // Attach the selected file
+        } 
+        if (url) {
+            formData.append('lesson[url]', url);
+        }
+
         try {
-            const response = await fetch('http://localhost:3000/lesson/add-lesson', {
-                method: 'POST',
+            const response = await axios.post('http://localhost:3000/lesson/add-lesson', formData, {
                 headers: {
-                    'Auth-Token': token,
-                    'Content-Type': 'application/json',
+                    'Auth-Token': token, // Auth token from localStorage
+                    'Content-Type': 'multipart/form-data', // Specify multipart
                 },
-                body: JSON.stringify({
-                    chapter_number: chapterOrder, // Use `chapterOrder` as `chapter_number` here
-                    lesson: {
-                        course: courseId,
-                        title,
-                        description,
-                        type,
-                        url
-                    }
-                }),
             });
-            const data = await response.json();
-            if (response.ok) {
-                // Show success message
+
+            if (response.status === 201) {
                 setError('Thêm bài học thành công!');
                 setTimeout(() => {
-                    window.location.reload(); // Reload page after 0.5s
-                }, 500); 
+                    window.location.reload(); // Reload the page after success
+                }, 500);
             } else {
-                setError(data.message);
+                setError(response.data.message || 'Không thể thêm bài học.');
             }
         } catch (error) {
-            setError('Không thể thêm bài học.');
+            setError(error.response?.data?.message || 'Lỗi khi thêm bài học.');
         }
     };
+    
 
     const getLessonIcon = (type) => {
         if (type === 'video') {

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import './ProfilePage.css';
 import Navbar from '../../components/Navbar/Navbar';
+import axios from "axios";
 
 const ProfilePage = () => {
     const [activeTab, setActiveTab] = useState('profile');
@@ -84,20 +85,24 @@ const ProfilePage = () => {
             }
 
             const token = localStorage.getItem('token');
-            const response = await fetch('http://localhost:3000/user/update-user-info', {
-                method: 'PUT',
-                headers: {
-                    'Auth-Token': token,
-                },
-                body: formData,
-            });
+            const response = await axios.put(
+                'http://localhost:3000/user/update-user-info',
+                formData,
+                {
+                    headers: {
+                        'Auth-Token': token,
+                        'Content-Type': 'multipart/form-data', // Ensure the correct content type
+                    },
+                }
+            );
 
-            const data = await response.json();
-            if (response.ok) {
+            if (response.status === 200) {
                 setSuccessMessage('Profile updated successfully!');
-                fetchUserInfo(); // Refresh user info after successful update
+                setTimeout(() => {
+                    window.location.reload();
+                }, 500);
             } else {
-                setError(data.message || 'Failed to update profile.');
+                setError(response.data.message || 'Failed to update profile.');
             }
         } catch (error) {
             console.error('Error updating profile:', error);

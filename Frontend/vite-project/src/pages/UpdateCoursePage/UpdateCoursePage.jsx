@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import './UpdateCoursePage.css';
 import Navbar from '../../components/Navbar/Navbar';
+import axios from "axios";
 
 const UpdateCoursePage = () => {
     const [course, setCourse] = useState(null);
@@ -78,15 +79,14 @@ const UpdateCoursePage = () => {
 
         try {
             const token = localStorage.getItem('token');
-            const response = await fetch(`http://localhost:3000/course/update-course/${courseId}`, {
-                method: 'PUT',
+            const response = await axios.put(`http://localhost:3000/course/update-course/${courseId}`, formData, {
                 headers: {
-                    'Auth-Token': token,
+                    "Auth-Token": token,
+                    "Content-Type": "multipart/form-data",
                 },
-                body: formData,
             });
 
-            const data = await response.json();
+            const data = response.data;
             if (data.success) {
                 alert('Chỉnh sửa khóa học thành công!');
                 navigate(`/modify-course/${courseId}`);

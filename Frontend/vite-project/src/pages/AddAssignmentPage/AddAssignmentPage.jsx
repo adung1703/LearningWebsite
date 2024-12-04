@@ -70,6 +70,17 @@ const AddAssignmentPage = () => {
         }
 
         const duration = durationHours * 60 * 60 + durationMinutes * 60;
+        
+        // Append '\n' to each expected output for code type assignments
+        const formattedPublicTestCases = publicTestCases.map(testCase => ({
+            ...testCase,
+            expected_output: testCase.expected_output + '\n',
+        }));
+
+        const formattedPrivateTestCases = privateTestCases.map(testCase => ({
+            ...testCase,
+            expected_output: testCase.expected_output + '\n',
+        }));
 
         // Build the assignment data
         const assignment = {
@@ -78,7 +89,7 @@ const AddAssignmentPage = () => {
             description,
             type: assignmentType === 'trac_nghiem' ? 'quiz' :
                 assignmentType === 'dien_dap_an' ? 'fill' :
-                    assignmentType === 'tu_luan' ? 'assignment' : 'code',
+                    assignmentType === 'tu_luan' ? 'file-upload' : 'code',
             url: url || null,
             questions: assignmentType === 'trac_nghiem' ?
                 questions.map(q => ({
@@ -103,8 +114,8 @@ const AddAssignmentPage = () => {
             version: assignmentType === 'code' ? selectedVersion : null,
             pre_code: assignmentType === 'code' ? preCode.replace(/\n/g, '\\n') : null,
             next_code: assignmentType === 'code' ? nextCode.replace(/\n/g, '\\n') : null,
-            public_testcases: publicTestCases, // Not using test cases for now
-            private_testcases: privateTestCases, // Not using test cases for now
+            public_testcases: assignmentType === 'code' ? formattedPublicTestCases : null,
+            private_testcases: assignmentType === 'code' ? formattedPrivateTestCases : null,
         };
 
         const body = {

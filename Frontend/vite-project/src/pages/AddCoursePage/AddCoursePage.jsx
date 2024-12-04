@@ -26,7 +26,7 @@ const AddCoursePage = () => {
 
                 const data = await response.json();
                 if (data.success) {
-                    setInstructorId(data.user._id); // Set the instructor ID
+                    setInstructorId(data.user._id);
                 } else {
                     console.error('Error fetching user info:', data.message);
                     alert('Không thể lấy thông tin người dùng. Vui lòng đăng nhập lại.');
@@ -45,11 +45,7 @@ const AddCoursePage = () => {
     const handleImageChange = (event) => {
         const file = event.target.files[0];
         if (file) {
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                setSelectedImage(e.target.result); // Store the file content
-            };
-            reader.readAsDataURL(file);
+            setSelectedImage(file); // Directly store the selected File object
         }
     };
 
@@ -80,8 +76,7 @@ const AddCoursePage = () => {
         formData.append('price', parsedPrice);
         formData.append('instructor', instructorId);
         if (selectedImage) {
-            const fileBlob = new Blob([selectedImage], { type: 'text/html' });
-            formData.append('image', new File([fileBlob], 'course-image.html'));
+            formData.append('image', selectedImage); // Append raw file
         }
 
         try {
@@ -93,10 +88,10 @@ const AddCoursePage = () => {
                 },
             });
 
-            const data = await response.data;
+            const data = response.data;
             if (data.success) {
                 alert('Thêm khóa học thành công!');
-                navigate('/dashboard');
+                navigate('/courses-managerment');
             } else {
                 alert(`Thêm khóa học thất bại: ${data.message}`);
             }
@@ -145,7 +140,7 @@ const AddCoursePage = () => {
                     <div className="image-preview">
                         <p>Đã chọn ảnh: {selectedImage.name}</p>
                         <button onClick={handleRemoveImage} className="remove-image-button">
-                            X
+                            Xóa ảnh
                         </button>
                     </div>
                 )}
