@@ -19,6 +19,11 @@ const Dashboard = () => {
     const navigate = useNavigate();
 
     useEffect(() => {
+        const token = localStorage.getItem('token');
+        if (!token) {
+            navigate('/sign-in');
+            return;
+        }
         const fetchCourses = async () => {
             try {
                 const response = await fetch(`http://localhost:3000/course/all-courses`, {

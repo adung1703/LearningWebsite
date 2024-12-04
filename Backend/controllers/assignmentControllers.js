@@ -20,7 +20,7 @@ exports.getAllAssignments = async (req, res) => {
 
 exports.addAssignment = async (req, res) => {
     try {
-        let { chapter_number, assignment, answer } = req.body;
+        let { chapter_number, assignment } = req.body;
         const { role, id } = req.user;
         chapter_number = parseInt(chapter_number);
 
@@ -34,9 +34,11 @@ exports.addAssignment = async (req, res) => {
             return res.status(403).json({ success: false, message: 'Bạn không có quyền thêm bài tập' });
         }
 
-        const newAnswer = await Answers.create(answer);
+        // Tạo câu trả lời trước
+        const newAnswer = await Answers.create(assignment.answers);
         assignment.answers = newAnswer._id;
 
+        // Tạo assignment
         const newAssignment = await Assignments.create(assignment);
 
         let chapter = course.chapters.find(chapter => chapter.order === chapter_number);
@@ -49,7 +51,7 @@ exports.addAssignment = async (req, res) => {
                 });
                 chapter = course.chapters[course.chapters.length - 1];
 
-                //Update Progresses
+                // Update Progresses
                 const progresses = await course_progresses.find({ courseId: course._id });
                 progresses.forEach(progress => {
                     progress.progress.push({
@@ -60,8 +62,9 @@ exports.addAssignment = async (req, res) => {
                     });
                     progress.save();
                 });
+            } else {
+                return res.status(404).json({ success: false, message: 'Không tìm thấy chương, hãy tạo chương mới' });
             }
-            else return res.status(404).json({ success: false, message: 'Không tìm thấy chương, hãy tạo chương mới' });
         }
 
         chapter.content.push({
@@ -70,8 +73,35 @@ exports.addAssignment = async (req, res) => {
             order: chapter.content.length + 1
         });
 
-        course.save();
+        await course.save();
         res.status(201).json({ success: true, data: newAssignment });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: error.message
+        });
+    }
+}
+
+exports.getAssignmentById = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { role } = req.user;
+
+        let assignmentQuery = Assignments.findById(id).populate('course', 'course_title');
+
+        // Nếu là admin hoặc instructor, populate thêm answers
+        if (role === 'admin' || role === 'instructor') {
+            assignmentQuery = assignmentQuery.populate('answers');
+        }
+
+        const assignment = await assignmentQuery;
+
+        if (!assignment) {
+            return res.status(404).json({ success: false, message: 'Không tìm thấy bài tập' });
+        }
+
+        res.status(200).json({ success: true, data: assignment });
     } catch (error) {
         res.status(500).json({
             success: false,

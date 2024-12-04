@@ -30,7 +30,9 @@ const courseSchema = new mongoose.Schema({
                     {
                         content_type: String, // lesson or assignment
                         lesson_id: mongoose.Schema.Types.ObjectId,
-                        assignment_id: mongoose.Schema.Types.ObjectId,
+                        assignment_id: {
+                            type: mongoose.Schema.Types.ObjectId,
+                            ref: 'Assignments'},
                         order: Number
                     }
                 ]
