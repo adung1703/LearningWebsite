@@ -139,7 +139,7 @@ const CourseManagementPage = () => {
             navigate('/sign-in');
         } else {
             axios
-                .get('http://localhost:3000/user/user-info', {
+                .get('https://learning-website-final.onrender.com/user/user-info', {
                     headers: {
                         'Auth-Token': token,
                     },
@@ -180,7 +180,7 @@ const CourseManagementPage = () => {
     useEffect(() => {
         const fetchMyCourses = async () => {
             try {
-                const response = await fetch(`http://localhost:3000/course/find-by-instructor/`, {
+                const response = await fetch(`https://learning-website-final.onrender.com/course/find-by-instructor/`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -211,7 +211,7 @@ const CourseManagementPage = () => {
     const handleSearch = async () => {
         try {
             const response = await fetch(
-                `http://localhost:3000/course/search-courses?keyword=${encodeURIComponent(searchKeyword)}`,
+                `https://learning-website-final.onrender.com/course/search-courses?keyword=${encodeURIComponent(searchKeyword)}`,
                 {
                     method: 'GET',
                     headers: {

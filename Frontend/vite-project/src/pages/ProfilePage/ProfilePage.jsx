@@ -17,7 +17,7 @@ const ProfilePage = () => {
     // Function to fetch user info from the API
     const fetchUserInfo = async () => {
         try {
-            const response = await fetch('http://localhost:3000/user/user-info', {
+            const response = await fetch('https://learning-website-final.onrender.com/user/user-info', {
                 method: 'GET',
                 headers: {
                     'Auth-Token': localStorage.getItem('token'), // Change to 'Auth-Token'

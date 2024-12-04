@@ -11,7 +11,7 @@ const DropdownMenu = ({ userId }) => {
     const token = localStorage.getItem('token');
     const grantInstructorRole = async () => {
         try {
-            const response = await axios.put("http://localhost:3000/admin/grant-instructor-role", 
+            const response = await axios.put("https://learning-website-final.onrender.com/admin/grant-instructor-role", 
                 {userId: userId},
                 {
                     headers: {

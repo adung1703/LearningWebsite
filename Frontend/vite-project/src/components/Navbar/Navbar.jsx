@@ -15,7 +15,7 @@ const Navbar = () => {
       navigate('/sign-in');
     } else {
       axios
-        .get('http://localhost:3000/user/user-info', {
+        .get('https://learning-website-final.onrender.com/user/user-info', {
           headers: {
             'Auth-Token': token,
           },

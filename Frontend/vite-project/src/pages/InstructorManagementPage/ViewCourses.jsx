@@ -23,7 +23,7 @@ const ViewCourses = ({ instructor }) => {
 
     useEffect(() => {
         const fetchCourses = async () => {
-            axios.get(`http://localhost:3000/admin/instructor-courses/${instructor._id}`, {
+            axios.get(`https://learning-website-final.onrender.com/admin/instructor-courses/${instructor._id}`, {
                 headers: {
                     'Auth-Token': token,
                 },

@@ -23,7 +23,7 @@ const LessonPage = () => {
         const fetchLessonDetails = async () => {
             const token = localStorage.getItem('token'); 
             try {
-                const response = await fetch(`http://localhost:3000/lesson/get-lesson/${courseId}/${lessonId}`, {
+                const response = await fetch(`https://learning-website-final.onrender.com/lesson/get-lesson/${courseId}/${lessonId}`, {
                     method: 'GET',
                     headers: {
                         'Auth-Token': `${token}`,
@@ -44,7 +44,7 @@ const LessonPage = () => {
         const fetchCourseDetails = async () => {
             const token = localStorage.getItem('token'); 
             try {
-                const response = await fetch(`http://localhost:3000/course/get-detail/${courseId}`, {
+                const response = await fetch(`https://learning-website-final.onrender.com/course/get-detail/${courseId}`, {
                     method: 'GET',
                     headers: {
                         'Auth-Token': `${token}`,
@@ -75,7 +75,7 @@ const LessonPage = () => {
         const fetchProgressDetails = async () => {
             const token = localStorage.getItem('token'); 
             try {
-                const response = await fetch(`http://localhost:3000/progress/get-course-progress/${courseId}`, {
+                const response = await fetch(`https://learning-website-final.onrender.com/progress/get-course-progress/${courseId}`, {
                     method: 'GET',
                     headers: {
                         'Auth-Token': `${token}`,
@@ -113,7 +113,7 @@ const LessonPage = () => {
     const handleMarkComplete = async () => {
         const token = localStorage.getItem('token');
         try {
-            const response = await fetch(`http://localhost:3000/progress/complete-lesson/${courseId}/${lessonId}`, {
+            const response = await fetch(`https://learning-website-final.onrender.com/progress/complete-lesson/${courseId}/${lessonId}`, {
                 method: 'PUT',
                 headers: {
                     'Auth-Token': `${token}`,

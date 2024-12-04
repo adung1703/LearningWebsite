@@ -98,7 +98,7 @@ const AddAssignmentPage = () => {
 
         try {
             const token = localStorage.getItem('token');
-            const response = await axios.post('http://localhost:3000/assignment/add-assignment', body, {
+            const response = await axios.post('https://learning-website-final.onrender.com/assignment/add-assignment', body, {
                 headers: {
                     'Auth-Token': token,
                     'Content-Type': 'application/json'
