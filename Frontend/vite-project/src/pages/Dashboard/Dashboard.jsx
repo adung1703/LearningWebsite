@@ -27,7 +27,7 @@ const Dashboard = () => {
         }
         const fetchUserInfo = async () => {
             try {
-                const response = await fetch(`http://localhost:3000/user/user-info`, {
+                const response = await fetch(`https://learning-website-final.onrender.com/user/user-info`, {
                     method: 'GET',
                     headers: {
                         'Auth-Token': token,
@@ -47,7 +47,7 @@ const Dashboard = () => {
 
         const fetchCourses = async () => {
             try {
-                const response = await fetch(`http://localhost:3000/course/all-courses`, {
+                const response = await fetch(`https://learning-website-final.onrender.com/course/all-courses`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -73,7 +73,7 @@ const Dashboard = () => {
         const fetchJoinedCourses = async () => {
             try {
                 const token = localStorage.getItem('token');
-                const response = await fetch(`http://localhost:3000/course/my-courses`, {
+                const response = await fetch(`https://learning-website-final.onrender.com/course/my-courses`, {
                     method: 'GET',
                     headers: {
                         'Content-Type': 'application/json',
@@ -111,7 +111,7 @@ const Dashboard = () => {
     const handleSearch = async () => {
         try {
             const response = await fetch(
-                `http://localhost:3000/course/search-courses?keyword=${encodeURIComponent(searchKeyword)}`,
+                `https://learning-website-final.onrender.com/course/search-courses?keyword=${encodeURIComponent(searchKeyword)}`,
                 {
                     method: 'GET',
                     headers: {
@@ -157,7 +157,7 @@ const Dashboard = () => {
                 }
     
                 // API request to join the course
-                const response = await fetch('http://localhost:3000/user/join-course', {
+                const response = await fetch('https://learning-website-final.onrender.com/user/join-course', {
                     method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json',
@@ -203,7 +203,7 @@ const Dashboard = () => {
         const token = localStorage.getItem('token');
         
         try {
-            const courseResponse = await fetch(`http://localhost:3000/course/get-detail/${courseId}`, {
+            const courseResponse = await fetch(`https://learning-website-final.onrender.com/course/get-detail/${courseId}`, {
                 method: 'GET',
                 headers: {
                     'Auth-Token': `${token}`,
@@ -217,7 +217,7 @@ const Dashboard = () => {
                     return total + chapter.content.length;
                 }, 0);
     
-                const progressResponse = await fetch(`http://localhost:3000/progress/get-course-progress/${courseId}`, {
+                const progressResponse = await fetch(`https://learning-website-final.onrender.com/progress/get-course-progress/${courseId}`, {
                     method: 'GET',
                     headers: {
                         'Auth-Token': `${token}`,

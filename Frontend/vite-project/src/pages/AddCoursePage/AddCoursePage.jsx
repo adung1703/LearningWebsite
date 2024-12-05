@@ -17,7 +17,7 @@ const AddCoursePage = () => {
         const fetchUserInfo = async () => {
             try {
                 const token = localStorage.getItem('token');
-                const response = await fetch('http://localhost:3000/user/user-info', {
+                const response = await fetch('https://learning-website-final.onrender.com/user/user-info', {
                     method: 'GET',
                     headers: {
                         'Auth-Token': token,
@@ -81,7 +81,7 @@ const AddCoursePage = () => {
 
         try {
             const token = localStorage.getItem('token');
-            const response = await axios.post("http://localhost:3000/course/add-course", formData, {
+            const response = await axios.post("https://learning-website-final.onrender.com/course/add-course", formData, {
                 headers: {
                     "Auth-Token": token,
                     "Content-Type": "multipart/form-data",

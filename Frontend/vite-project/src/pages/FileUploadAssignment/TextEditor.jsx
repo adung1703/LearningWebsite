@@ -18,7 +18,7 @@ const TextEditor = ({ assignment, courseId, token }) => {
 
             console.log("Form data:", formData);
     
-            const response = await axios.post("http://localhost:3000/submission/add-submission", formData, {
+            const response = await axios.post("https://learning-website-final.onrender.com/submission/add-submission", formData, {
                 headers: {
                     "Auth-Token": token,
                     "Content-Type": "multipart/form-data",

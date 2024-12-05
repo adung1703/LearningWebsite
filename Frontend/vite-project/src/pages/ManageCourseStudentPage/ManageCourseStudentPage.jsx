@@ -15,7 +15,7 @@ const ManageCourseStudentPage = () => {
                 const token = localStorage.getItem('token'); // Get the Auth-Token from localStorage
                 if (!token) throw new Error('Auth token is missing.');
 
-                const response = await fetch(`http://localhost:3000/instructor/students/${courseId}`, {
+                const response = await fetch(`https://learning-website-final.onrender.com/instructor/students/${courseId}`, {
                     method: 'GET',
                     headers: {
                         'Content-Type': 'application/json',

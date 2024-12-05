@@ -21,7 +21,7 @@ const CoursesOfStudent = ({ userId }) => {
     useEffect(() => {
         const fetchCourses = async () => {
             try {
-                const response = await axios.get(`http://localhost:3000/admin/get-course-joined/${userId}`, 
+                const response = await axios.get(`https://learning-website-final.onrender.com/admin/get-course-joined/${userId}`, 
                     {
                         headers: {
                             'Auth-Token': localStorage.getItem('token')

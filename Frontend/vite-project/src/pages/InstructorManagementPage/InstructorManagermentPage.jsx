@@ -186,7 +186,7 @@ const InstructorPage = () => {
             navigate('/sign-in');
         }
         const fetchUser = async () => {
-            axios.get('http://localhost:3000/user/user-info', {
+            axios.get('https://learning-website-final.onrender.com/user/user-info', {
                 headers: {
                     'Auth-Token': token,
                 },
@@ -211,7 +211,7 @@ const InstructorPage = () => {
         fetchUser();
 
         const fetchListInstructors = async () => {
-            axios.get('http://localhost:3000/admin/instructors', {
+            axios.get('https://learning-website-final.onrender.com/admin/instructors', {
                 headers: {
                     'Auth-Token': token,
                 },

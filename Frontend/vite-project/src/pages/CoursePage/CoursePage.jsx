@@ -20,7 +20,7 @@ const CoursePage = () => {
             const token = localStorage.getItem('token');
 
             try {
-                const response = await fetch(`http://localhost:3000/course/get-detail/${courseId}`, {
+                const response = await fetch(`https://learning-website-final.onrender.com/course/get-detail/${courseId}`, {
                     method: 'GET',
                     headers: {
                         'Auth-Token': `${token}`,
@@ -52,7 +52,7 @@ const CoursePage = () => {
                     for (const content of chapter.content) {
                         if (content.content_type === 'lesson') {
                             try {
-                                const response = await fetch(`http://localhost:3000/lesson/get-lesson/${courseId}/${content.lesson_id}`, {
+                                const response = await fetch(`https://learning-website-final.onrender.com/lesson/get-lesson/${courseId}/${content.lesson_id}`, {
                                     method: 'GET',
                                     headers: {
                                         'Auth-Token': `${token}`,
@@ -83,7 +83,7 @@ const CoursePage = () => {
         const fetchCourseProgress = async () => {
             const token = localStorage.getItem('token');
             try {
-                const response = await fetch(`http://localhost:3000/progress/get-course-progress/${courseId}`, {
+                const response = await fetch(`https://learning-website-final.onrender.com/progress/get-course-progress/${courseId}`, {
                     method: 'GET',
                     headers: {
                         'Auth-Token': `${token}`,

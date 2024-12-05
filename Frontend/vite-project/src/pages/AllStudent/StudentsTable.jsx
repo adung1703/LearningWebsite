@@ -10,7 +10,7 @@ function TableWithStripedRows() {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const response = await axios.get("http://localhost:3000/admin/users", {
+                const response = await axios.get("https://learning-website-final.onrender.com/admin/users", {
                     headers: {
                         'Content-Type': 'application/json',
                         'Auth-Token': localStorage.getItem('token')

@@ -20,7 +20,7 @@ const CodeSubmissionPage = () => {
     useEffect(() => {
         const fetchCourseDetails = async () => {
             // Simulating course data fetching
-            const response = await axios.get(`http://localhost:3000/course/get-detail/${courseId}`,
+            const response = await axios.get(`https://learning-website-final.onrender.com/course/get-detail/${courseId}`,
                 {
                     headers: {
                         'Content-Type': 'application/json',
@@ -46,7 +46,7 @@ const CodeSubmissionPage = () => {
         const fetchSubmissionState = async () => {
             try { 
                 const response = await axios.get(
-                    `http://localhost:3000/progress/get-course-progress/${courseId}`,
+                    `https://learning-website-final.onrender.com/progress/get-course-progress/${courseId}`,
                     {
                         headers: {
                             'Auth-Token': localStorage.getItem('token')
@@ -72,7 +72,7 @@ const CodeSubmissionPage = () => {
         const fetchSubmissionScore = async () => {
             try {
                 const response = await axios.get(
-                    `http://localhost:3000/submission/get-submission/${assignmentId}`,
+                    `https://learning-website-final.onrender.com/submission/get-submission/${assignmentId}`,
                     {
                         headers: {
                             'Auth-Token': localStorage.getItem('token'),
@@ -95,7 +95,7 @@ const CodeSubmissionPage = () => {
         const fetchAssignmentDetail = async () => {
             try {
                 const response = await axios.get(
-                    `http://localhost:3000/assignment/get-assignment/${assignmentId}`,
+                    `https://learning-website-final.onrender.com/assignment/get-assignment/${assignmentId}`,
                     {
                         headers: {
                             'Auth-Token': localStorage.getItem('token'),
@@ -510,7 +510,7 @@ const CodeSubmissionPage = () => {
             setResult('Đang chấm bài...');
             setSubmissions(true);
             const response = await axios.post(
-                'http://localhost:3000/submission/add-submission',
+                'https://learning-website-final.onrender.com/submission/add-submission',
                 {
                     courseId: courseId,
                     assignmentId: assignmentId,

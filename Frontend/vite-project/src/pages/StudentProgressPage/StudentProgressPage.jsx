@@ -21,7 +21,7 @@ const StudentProgressPage = () => {
         const fetchSubmissions = async () => {
             try {
                 const { data } = await axios.get(
-                    `http://localhost:3000/instructor/all-submission/${courseId}/${userId}`,
+                    `https://learning-website-final.onrender.com/instructor/all-submission/${courseId}/${userId}`,
                     { headers: { 'Auth-Token': token } }
                 );
 
@@ -31,7 +31,7 @@ const StudentProgressPage = () => {
                         submissions.map(async (submission) => {
                             try {
                                 const { data: assignmentData } = await axios.get(
-                                    `http://localhost:3000/assignment/get-assignment/${submission.assignmentId}`,
+                                    `https://learning-website-final.onrender.com/assignment/get-assignment/${submission.assignmentId}`,
                                     { headers: { 'Auth-Token': token } }
                                 );
                                 return {
@@ -89,7 +89,7 @@ const StudentProgressPage = () => {
 
         try {
             const { data } = await axios.get(
-                `http://localhost:3000/instructor/detail-submission/${assignment.submission._id}`,
+                `https://learning-website-final.onrender.com/instructor/detail-submission/${assignment.submission._id}`,
                 { headers: { 'Auth-Token': token } }
             );
 
@@ -120,7 +120,7 @@ const StudentProgressPage = () => {
         // Submit grade
         try {
             const { data } = await axios.put(
-                `http://localhost:3000/instructor/score/${selectedAssignment.submission._id}`,
+                `https://learning-website-final.onrender.com/instructor/score/${selectedAssignment.submission._id}`,
                 { score: parsedGrade },
                 { headers: { 'Auth-Token': token } }
             );

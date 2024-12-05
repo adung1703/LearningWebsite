@@ -11,7 +11,7 @@ const CommentsSection = ({ lessonId }) => {
         const token = localStorage.getItem('token');
 
         try {
-            const response = await fetch(`http://localhost:3000/lesson/get-comments-of-lesson/${lessonId}`, {
+            const response = await fetch(`https://learning-website-final.onrender.com/lesson/get-comments-of-lesson/${lessonId}`, {
                 method: 'GET',
                 headers: {
                     'Auth-Token': `${token}`,
@@ -44,7 +44,7 @@ const CommentsSection = ({ lessonId }) => {
         }
 
         try {
-            const response = await fetch(`http://localhost:3000/lesson/new-comment`, {
+            const response = await fetch(`https://learning-website-final.onrender.com/lesson/new-comment`, {
                 method: 'POST',
                 headers: {
                     'Auth-Token': `${token}`,
@@ -78,7 +78,7 @@ const CommentsSection = ({ lessonId }) => {
         }
 
         try {
-            const response = await fetch(`http://localhost:3000/lesson/reply-comment`, {
+            const response = await fetch(`https://learning-website-final.onrender.com/lesson/reply-comment`, {
                 method: 'POST',
                 headers: {
                     'Auth-Token': `${token}`,

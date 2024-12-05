@@ -22,7 +22,7 @@ const ProfilePage = () => {
     // Function to fetch user info from the API
     const fetchUserInfo = async () => {
         try {
-            const response = await fetch('http://localhost:3000/user/user-info', {
+            const response = await fetch('https://learning-website-final.onrender.com/user/user-info', {
                 method: 'GET',
                 headers: {
                     'Auth-Token': localStorage.getItem('token'),
@@ -86,7 +86,7 @@ const ProfilePage = () => {
 
             const token = localStorage.getItem('token');
             const response = await axios.put(
-                'http://localhost:3000/user/update-user-info',
+                'https://learning-website-final.onrender.com/user/update-user-info',
                 formData,
                 {
                     headers: {
@@ -128,7 +128,7 @@ const ProfilePage = () => {
             formData.append('password', newPassword);
 
             const token = localStorage.getItem('token');
-            const response = await fetch('http://localhost:3000/user/update-user-info', {
+            const response = await fetch('https://learning-website-final.onrender.com/user/update-user-info', {
                 method: 'PUT',
                 headers: {
                     'Auth-Token': token,

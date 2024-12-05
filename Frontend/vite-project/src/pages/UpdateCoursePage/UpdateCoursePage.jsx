@@ -20,7 +20,7 @@ const UpdateCoursePage = () => {
         const fetchCourseDetails = async () => {
             const token = localStorage.getItem('token');
             try {
-                const response = await fetch(`http://localhost:3000/course/get-detail/${courseId}`, {
+                const response = await fetch(`https://learning-website-final.onrender.com/course/get-detail/${courseId}`, {
                     method: 'GET',
                     headers: {
                         'Auth-Token': token,
@@ -79,7 +79,7 @@ const UpdateCoursePage = () => {
 
         try {
             const token = localStorage.getItem('token');
-            const response = await axios.put(`http://localhost:3000/course/update-course/${courseId}`, formData, {
+            const response = await axios.put(`https://learning-website-final.onrender.com/course/update-course/${courseId}`, formData, {
                 headers: {
                     "Auth-Token": token,
                     "Content-Type": "multipart/form-data",

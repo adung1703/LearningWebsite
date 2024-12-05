@@ -17,7 +17,7 @@ const FileUploadAssignment = () => {
 
     const fetchAssignment = async (assignmentId) => { 
         try {
-            const response = await axios.get(`http://localhost:3000/assignment/get-assignment/${assignmentId}`,
+            const response = await axios.get(`https://learning-website-final.onrender.com/assignment/get-assignment/${assignmentId}`,
                 {
                     method: 'GET',
                     headers: {
@@ -35,7 +35,7 @@ const FileUploadAssignment = () => {
     };
     const fetchAssignmentState = async (courseId, assignmentId) => {
         try {
-            const response = await axios.get(`http://localhost:3000/progress/get-course-progress/${courseId}`,
+            const response = await axios.get(`https://learning-website-final.onrender.com/progress/get-course-progress/${courseId}`,
             {
                 headers: {
                     'Auth-Token': `${token}`,
@@ -57,7 +57,7 @@ const FileUploadAssignment = () => {
     };
     const fetchHighestScore = async (assignmentId) => {
         try {
-            const response = await axios.get(`http://localhost:3000/submission/get-submission/${assignmentId}`,
+            const response = await axios.get(`https://learning-website-final.onrender.com/submission/get-submission/${assignmentId}`,
             {
                 headers: {
                     'Auth-Token': `${token}`,
@@ -94,7 +94,7 @@ const FileUploadAssignment = () => {
     const handleSubmit = async () => {
         try {
             console.log('Submitting quiz:', answers);
-            const response = await axios.post('http://localhost:3000/submission/add-submission',
+            const response = await axios.post('https://learning-website-final.onrender.com/submission/add-submission',
                 {
                     assignmentId,
                     courseId,

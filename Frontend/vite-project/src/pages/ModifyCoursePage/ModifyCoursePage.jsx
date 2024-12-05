@@ -38,7 +38,7 @@ const ModifyCoursePage = () => {
         const fetchCourseDetails = async () => {
             const token = localStorage.getItem('token');
             try {
-                const response = await fetch(`http://localhost:3000/course/get-detail/${courseId}`, {
+                const response = await fetch(`https://learning-website-final.onrender.com/course/get-detail/${courseId}`, {
                     method: 'GET',
                     headers: {
                         'Auth-Token': token,
@@ -87,7 +87,7 @@ const ModifyCoursePage = () => {
                 const lessons = {};
                 for (const content of contentItems) {
                     const response = content.content_type === 'lesson'
-                        ? await fetch(`http://localhost:3000/lesson/get-lesson/${courseId}/${content.lesson_id}`, {
+                        ? await fetch(`https://learning-website-final.onrender.com/lesson/get-lesson/${courseId}/${content.lesson_id}`, {
                             method: 'GET',
                             headers: {
                                 'Auth-Token': token,
@@ -133,7 +133,7 @@ const ModifyCoursePage = () => {
     const deleteChapter = async () => {
         const token = localStorage.getItem('token');
         try {
-            const response = await fetch(`http://localhost:3000/course/delete-chapter/${courseId}/${chapterToDelete}`, {
+            const response = await fetch(`https://learning-website-final.onrender.com/course/delete-chapter/${courseId}/${chapterToDelete}`, {
                 method: 'DELETE',
                 headers: {
                     'Auth-Token': token,
@@ -159,7 +159,7 @@ const ModifyCoursePage = () => {
     const addChapter = async () => {
         const token = localStorage.getItem('token');
         try {
-            const response = await fetch(`http://localhost:3000/course/add-chapter/${courseId}`, {
+            const response = await fetch(`https://learning-website-final.onrender.com/course/add-chapter/${courseId}`, {
                 method: 'POST',
                 headers: {
                     'Auth-Token': token,
@@ -229,7 +229,7 @@ const ModifyCoursePage = () => {
     const deleteCourse = async () => {
         const token = localStorage.getItem('token');
         try {
-            const response = await fetch(`http://localhost:3000/course/delete-course/${courseId}`, {
+            const response = await fetch(`https://learning-website-final.onrender.com/course/delete-course/${courseId}`, {
                 method: 'DELETE',
                 headers: {
                     'Auth-Token': token,
@@ -268,7 +268,7 @@ const ModifyCoursePage = () => {
         }
 
         try {
-            const response = await axios.post('http://localhost:3000/lesson/add-lesson', formData, {
+            const response = await axios.post('https://learning-website-final.onrender.com/lesson/add-lesson', formData, {
                 headers: {
                     'Auth-Token': token, // Auth token from localStorage
                     'Content-Type': 'multipart/form-data', // Specify multipart
