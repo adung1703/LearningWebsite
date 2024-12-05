@@ -2,7 +2,6 @@
     display: flex;
     flex-direction: column;
     align-items: center; /* Center aligns the content */
-    padding-top: 100px; /* Adjust this value based on your navbar height */
     min-height: 100vh; /* Ensure it takes full height */
     background-color: #f9f9f9; /* Optional: background color for better contrast */
 }
@@ -75,4 +74,16 @@
     background-color: #4caf50; /* Green color to indicate completion */
     cursor: not-allowed;
     border-color: #4caf50;
+}
+
+.next-lesson-section button.disabled {
+    background-color: #d3d3d3; /* Grey background for disabled button */
+    color: #8c8c8c; /* Light grey text color */
+    cursor: not-allowed; /* Indicate button is unclickable */
+    border-color: #d3d3d3; /* Match border to background */
+}
+
+.next-lesson-section button.disabled:hover {
+    background-color: #d3d3d3; /* Ensure no color change on hover */
+    color: #8c8c8c; /* Ensure no text color change */
 }

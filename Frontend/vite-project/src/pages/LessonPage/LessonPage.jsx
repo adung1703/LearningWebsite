@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useParams, Link } from 'react-router-dom'; 
+import { useParams, Link, useLocation } from 'react-router-dom'; 
 import Navbar from '../../components/Navbar/Navbar';
 import CommentsSection from '../../components/CommentsSection/CommentsSection'; // Import CommentsSection component
 import './LessonPage.css'; 
@@ -14,14 +14,16 @@ const LessonPage = () => {
     const [progress, setProgress] = useState(null);
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(true);
-    const [isCompleted, setIsCompleted] = useState(false); // To track completion status
+    const [isCompleted, setIsCompleted] = useState(false); // Completion status
+    const location = useLocation();
+    const dataState = location.state;
+    const [isPreviousChapterIncomplete, setIsPreviousChapterIncomplete] = useState(false); // Disable button if true
 
-    // Fetching the data
     useEffect(() => {
         const fetchLessonDetails = async () => {
             const token = localStorage.getItem('token'); 
             try {
-                const response = await fetch(`http://localhost:3000/lesson/get-lesson/${courseId}/${lessonId}`, {
+                const response = await fetch(`https://learning-website-final.onrender.com/lesson/get-lesson/${courseId}/${lessonId}`, {
                     method: 'GET',
                     headers: {
                         'Auth-Token': `${token}`,
@@ -42,7 +44,7 @@ const LessonPage = () => {
         const fetchCourseDetails = async () => {
             const token = localStorage.getItem('token'); 
             try {
-                const response = await fetch(`http://localhost:3000/course/get-detail/${courseId}`, {
+                const response = await fetch(`https://learning-website-final.onrender.com/course/get-detail/${courseId}`, {
                     method: 'GET',
                     headers: {
                         'Auth-Token': `${token}`,
@@ -73,7 +75,7 @@ const LessonPage = () => {
         const fetchProgressDetails = async () => {
             const token = localStorage.getItem('token'); 
             try {
-                const response = await fetch(`http://localhost:3000/progress/get-course-progress/${courseId}`, {
+                const response = await fetch(`https://learning-website-final.onrender.com/progress/get-course-progress/${courseId}`, {
                     method: 'GET',
                     headers: {
                         'Auth-Token': `${token}`,
@@ -87,6 +89,16 @@ const LessonPage = () => {
                         chapter.chapter_order === chapterOrder && chapter.lessons_completed.includes(lessonId)
                     );
                     setIsCompleted(completed); // Set completion status
+
+                    // Check previous chapter's status
+                    const previousChapter = data.data.progress.find(chap => chap.chapter_order === chapterOrder - 1);
+                    if (previousChapter) {
+                        const allLessonsCompleted =
+                            previousChapter.lessons_completed.length === course.chapters[chapterOrder - 2].content.length;
+                        if (previousChapter.status !== 'completed' || !allLessonsCompleted) {
+                            setIsPreviousChapterIncomplete(true);
+                        }
+                    }
                 } else {
                     setError(data.message);
                 }
@@ -96,16 +108,23 @@ const LessonPage = () => {
         };
 
         // Execute all fetching functions simultaneously
-        Promise.all([fetchLessonDetails(), fetchCourseDetails(), fetchProgressDetails()])
+        if (dataState?.detail) {
+            setLesson(dataState.detail);
+            Promise.all([fetchCourseDetails(), fetchProgressDetails()])
             .finally(() => setLoading(false));
+        } else {
+            Promise.all([fetchLessonDetails(), fetchCourseDetails(), fetchProgressDetails()])
+            .finally(() => setLoading(false));
+        }
 
     }, [courseId, lessonId, chapterOrder]);
 
-    // Handle Mark Complete Button Click
     const handleMarkComplete = async () => {
+        if (isPreviousChapterIncomplete) return; // Disable action if previous chapter is incomplete
+
         const token = localStorage.getItem('token');
         try {
-            const response = await fetch(`http://localhost:3000/progress/complete-lesson/${courseId}/${lessonId}`, {
+            const response = await fetch(`https://learning-website-final.onrender.com/progress/complete-lesson/${courseId}/${lessonId}`, {
                 method: 'PUT',
                 headers: {
                     'Auth-Token': `${token}`,
@@ -135,7 +154,6 @@ const LessonPage = () => {
                 <p>Course: {course.title}</p>
             </div>
             <div className="video-section">
-                {/* Embed the YouTube video */}
                 {lesson.url && (
                     <iframe
                         width="560"
@@ -153,9 +171,10 @@ const LessonPage = () => {
                     <button>View Course</button>
                 </Link>
                 <button
-                    className={`mark-complete ${isCompleted ? 'completed' : ''}`}
-                    onClick={!isCompleted ? handleMarkComplete : null}
-                    disabled={isCompleted}
+                    className={`mark-complete ${isCompleted ? 'completed' : ''} ${isPreviousChapterIncomplete ? 'disabled' : ''}`}
+                    onClick={!isCompleted && !isPreviousChapterIncomplete ? handleMarkComplete : null}
+                    disabled={isCompleted || isPreviousChapterIncomplete}
+                    title={isPreviousChapterIncomplete ? 'Cần hoàn thành mọi bài học của chương trước' : ''}
                 >
                     {isCompleted ? 'Completed' : 'Mark Complete'}
                 </button>
@@ -167,7 +186,7 @@ const LessonPage = () => {
                     <button className="next-lesson" disabled>Next Lesson</button>
                 )}
             </div>
-            <CommentsSection lessonId={lessonId} /> {/* Add CommentsSection here */}
+            <CommentsSection lessonId={lessonId} />
         </div>
     );
 };

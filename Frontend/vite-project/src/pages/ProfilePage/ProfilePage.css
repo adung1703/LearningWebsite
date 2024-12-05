@@ -9,7 +9,7 @@
 .ProfilePage {
     display: flex;
     flex-direction: column;
-    padding-top: 80px; /* Adds padding to ensure content is below navbar */
+    padding-top: 0px; /* Adds padding to ensure content is below navbar */
     max-height: 200vh;
     overflow-y: auto;
     overflow-x: hidden;

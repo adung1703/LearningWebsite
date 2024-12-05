@@ -241,3 +241,15 @@
     cursor: pointer;
     margin-top: 20px;
 }
+
+.add-course-button {
+    margin-top: 20px;
+    padding: 10px 20px;
+    background-color: #0f766e;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}

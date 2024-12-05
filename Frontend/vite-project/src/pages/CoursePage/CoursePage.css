@@ -104,21 +104,3 @@
     background-color: #e0e0e0;
 }
 
-.lesson-item.unclickable {
-    background-color: #a1a1a1; /* Darker grey background for unclickable items */
-    cursor: not-allowed; /* Show restricted cursor */
-}
-
-.lesson-item.unclickable a {
-    color: black !important; /* Force text color to stay black */
-    pointer-events: none; /* Prevent clicking */
-}
-
-.lesson-item.unclickable:hover {
-    background-color: #a1a1a1; /* Keep background color dark grey */
-    cursor: not-allowed; /* Keep restricted cursor on hover */
-}
-
-.lesson-item.unclickable a:hover {
-    color: black; /* Ensure text stays black on hover */
-}

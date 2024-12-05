@@ -3,6 +3,7 @@ import { Link, useLocation, useParams } from 'react-router-dom';
 import Navbar from '../../components/Navbar/Navbar';
 import './CoursePage.css';
 import { FaBook, FaVideo, FaQuestionCircle } from 'react-icons/fa';
+import axios from 'axios';
 
 const CoursePage = () => {
     const { courseId } = useParams();
@@ -19,7 +20,7 @@ const CoursePage = () => {
             const token = localStorage.getItem('token');
 
             try {
-                const response = await fetch(`http://localhost:3000/course/get-detail/${courseId}`, {
+                const response = await fetch(`https://learning-website-final.onrender.com/course/get-detail/${courseId}`, {
                     method: 'GET',
                     headers: {
                         'Auth-Token': `${token}`,
@@ -51,7 +52,7 @@ const CoursePage = () => {
                     for (const content of chapter.content) {
                         if (content.content_type === 'lesson') {
                             try {
-                                const response = await fetch(`http://localhost:3000/lesson/get-lesson/${courseId}/${content.lesson_id}`, {
+                                const response = await fetch(`https://learning-website-final.onrender.com/lesson/get-lesson/${courseId}/${content.lesson_id}`, {
                                     method: 'GET',
                                     headers: {
                                         'Auth-Token': `${token}`,
@@ -82,7 +83,7 @@ const CoursePage = () => {
         const fetchCourseProgress = async () => {
             const token = localStorage.getItem('token');
             try {
-                const response = await fetch(`http://localhost:3000/progress/get-course-progress/${courseId}`, {
+                const response = await fetch(`https://learning-website-final.onrender.com/progress/get-course-progress/${courseId}`, {
                     method: 'GET',
                     headers: {
                         'Auth-Token': `${token}`,
@@ -99,6 +100,8 @@ const CoursePage = () => {
                         progress.lessons_completed.forEach(lessonId => {
                             progressStatus[lessonId] = true; // Mark as completed
                         });
+                    });
+                    progressData.data.progress.forEach(progress => {
                         progress.assignments_completed.forEach(assignmentId => {
                             progressStatus[assignmentId] = true; // Mark assignment as completed
                         });
@@ -149,26 +152,42 @@ const CoursePage = () => {
             default: return null;
         }
     };
-
+    
     const renderContent = (content, chapterIndex) => (
         <ul className="lessons-list">
             {content.map((item, index) => {
                 const contentData = item.content_type === 'lesson' ? lessonDetails[item.lesson_id] : null;
                 const lessonType = contentData ? contentData.type : null;
-                const isCompleted = item.completed || courseProgress[item.lesson_id] || courseProgress[item.assignment_id];
+                const isCompleted = item.completed || 
+                            courseProgress[item.lesson_id] || 
+                            (item.assignment_id && courseProgress[item.assignment_id._id]);
                 const dataState = {
                     chapterIndex,
-                    itemIndex: index
+                    itemIndex: index,
+                    detail: null
                 };
+
+                let link = ``;
+                if (item.content_type === 'lesson') {
+                    link = `/lesson/${courseId}/${item.lesson_id}`;
+                } else {
+                    if (!item.assignment_id) link = '#';
+                    else if (item.assignment_id.type.toString() === 'quiz') {
+                        link = `/quiz-assignment/${courseId}/${item.assignment_id._id}`;
+                    } else if (item.assignment_id.type.toString() === 'code') {
+                        link = `/code-submission/${courseId}/${item.assignment_id._id}`;
+                    } else {
+                        link = `/file-upload-assignment/${courseId}/${item.assignment_id._id}`; // Các thể loại còn lại đều gom vào quiz
+                    }
+                }
+
                 return (
                     <li
                         key={item._id}
                         id={item._id}
                         className={`lesson-item ${isCompleted ? 'completed' : 'uncompleted'}`}
                     >
-                        <Link to={item.content_type === 'assignment'
-                            ? `/assignment/${courseId}/${item.assignment_id}`
-                            : `/lesson/${courseId}/${item.lesson_id}`}
+                        <Link to={link}
                             style={{ textDecoration: 'none', color: 'inherit' }}
                             state={dataState}>
 
@@ -181,6 +200,7 @@ const CoursePage = () => {
             })}
         </ul>
     );
+    
 
     if (loading) return <div>Loading...</div>;
     if (error) return <div>Error: {error}</div>;

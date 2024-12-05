@@ -128,7 +128,7 @@ exports.getCourseDetail = async (req, res) => {
             return res.status(404).json({ success: false, message: 'Không tìm thấy khóa học' });
         }
 
-        if (!coursesJoined.includes(courseId) && req.user.role !== 'admin' && id !== course.instructor.id) {
+        if (!coursesJoined.includes(courseId) && req.user.role !== 'admin' && req.user.id !== course.instructor.id) {
             return res.status(403).json({ success: false, message: 'Không có quyền truy cập khóa học này' });
         }
 

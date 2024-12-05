@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import './ProfilePage.css';
 import Navbar from '../../components/Navbar/Navbar';
+import axios from "axios";
 
 const ProfilePage = () => {
     const [activeTab, setActiveTab] = useState('profile');
@@ -13,18 +14,20 @@ const ProfilePage = () => {
         role: '',
     });
     const [error, setError] = useState('');
-
+    const [successMessage, setSuccessMessage] = useState('');
+    const [newPassword, setNewPassword] = useState('');
+    const [confirmPassword, setConfirmPassword] = useState('');
+    const [passwordError, setPasswordError] = useState('');
+    const [passwordSuccess, setPasswordSuccess] = useState('');
     // Function to fetch user info from the API
     const fetchUserInfo = async () => {
         try {
-            const response = await fetch('http://localhost:3000/user/user-info', {
+            const response = await fetch('https://learning-website-final.onrender.com/user/user-info', {
                 method: 'GET',
                 headers: {
-                    'Auth-Token': localStorage.getItem('token'), // Change to 'Auth-Token'
+                    'Auth-Token': localStorage.getItem('token'),
                 },
             });
-            
-
             const data = await response.json();
             if (response.ok) {
                 setUserData({
@@ -60,10 +63,94 @@ const ProfilePage = () => {
         }
     };
 
+    const handleSaveProfile = async () => {
+        setError('');
+        setSuccessMessage('');
+
+        // Validate phone number
+        if (!/^\d{10}$/.test(userData.phoneNumber)) {
+            setError('Phone number must be a 10-digit number.');
+            return;
+        }
+
+        try {
+            const formData = new FormData();
+            formData.append('fullname', userData.fullname);
+            formData.append('email', userData.email);
+            formData.append('phoneNumber', userData.phoneNumber);
+
+            const avatarFile = document.getElementById('avatar-upload').files[0];
+            if (avatarFile) {
+                formData.append('avatar', avatarFile);
+            }
+
+            const token = localStorage.getItem('token');
+            const response = await axios.put(
+                'https://learning-website-final.onrender.com/user/update-user-info',
+                formData,
+                {
+                    headers: {
+                        'Auth-Token': token,
+                        'Content-Type': 'multipart/form-data', // Ensure the correct content type
+                    },
+                }
+            );
+
+            if (response.status === 200) {
+                setSuccessMessage('Profile updated successfully!');
+                setTimeout(() => {
+                    window.location.reload();
+                }, 500);
+            } else {
+                setError(response.data.message || 'Failed to update profile.');
+            }
+        } catch (error) {
+            console.error('Error updating profile:', error);
+            setError('An error occurred while updating your profile.');
+        }
+    };
+    const handleSavePassword = async () => {
+        setPasswordError('');
+        setPasswordSuccess('');
+
+        if (!newPassword || !confirmPassword) {
+            setPasswordError('Both fields are required.');
+            return;
+        }
+
+        if (newPassword !== confirmPassword) {
+            setPasswordError('Passwords do not match.');
+            return;
+        }
+
+        try {
+            const formData = new FormData();
+            formData.append('password', newPassword);
+
+            const token = localStorage.getItem('token');
+            const response = await fetch('https://learning-website-final.onrender.com/user/update-user-info', {
+                method: 'PUT',
+                headers: {
+                    'Auth-Token': token,
+                },
+                body: formData,
+            });
+
+            const data = await response.json();
+            if (response.ok) {
+                setPasswordSuccess('Password updated successfully!');
+                setNewPassword('');
+                setConfirmPassword('');
+            } else {
+                setPasswordError(data.message || 'Failed to update password.');
+            }
+        } catch (error) {
+            setPasswordError('An error occurred while updating your password.');
+        }
+    };
     const renderProfileTab = () => (
         <div className="profile-container">
             <h2>Profile</h2>
-            {error && <p className="error-message">{error}</p>}
             <div className="profile-avatar-section">
                 <img
                     src={avatar}
@@ -112,7 +199,9 @@ const ProfilePage = () => {
                     onChange={(e) => setUserData({ ...userData, phoneNumber: e.target.value })}
                 />
             </div>
-            <button className="save-btn">Save</button>
+            <button className="save-btn" onClick={handleSaveProfile}>Save</button>
+            {successMessage && <p className="success-message">{successMessage}</p>}
+            {error && <p className="error-message">{error}</p>}
         </div>
     );
 
@@ -120,18 +209,26 @@ const ProfilePage = () => {
         <div className="password-container">
             <h2>Change Password</h2>
             <div className="profile-field">
-                <label>Current Password</label>
-                <input type="password" placeholder="Enter current password" />
-            </div>
-            <div className="profile-field">
                 <label>New Password</label>
-                <input type="password" placeholder="Enter new password" />
+                <input 
+                    type="password" 
+                    placeholder="Enter new password" 
+                    value={newPassword} 
+                    onChange={(e) => setNewPassword(e.target.value)} 
+                />
             </div>
             <div className="profile-field">
                 <label>Confirm New Password</label>
-                <input type="password" placeholder="Confirm new password" />
+                <input 
+                    type="password" 
+                    placeholder="Confirm new password" 
+                    value={confirmPassword} 
+                    onChange={(e) => setConfirmPassword(e.target.value)} 
+                />
             </div>
-            <button className="save-btn">Save</button>
+            <button className="save-btn" onClick={handleSavePassword}>Save</button>
+            {passwordSuccess && <p className="success-message">{passwordSuccess}</p>}
+            {passwordError && <p className="error-message">{passwordError}</p>}
         </div>
     );
 

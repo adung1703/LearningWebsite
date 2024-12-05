@@ -4,6 +4,7 @@ import Navbar from '../../components/Navbar/Navbar';
 import './ModifyCoursePage.css';
 import { FaBook, FaQuestionCircle, FaVideo } from 'react-icons/fa';
 import Modal from 'react-modal';
+import axios from "axios";
 
 Modal.setAppElement('#root');
 
@@ -29,12 +30,15 @@ const ModifyCoursePage = () => {
     const [newChapterTitle, setNewChapterTitle] = useState('');
     const [lastAddedChapter, setLastAddedChapter] = useState(null);  // Track the last added chapter
     const [pdfFile, setPdfFile] = useState(null);
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+    const [isDeleteChapterModalOpen, setIsDeleteChapterModalOpen] = useState(false);
+    const [chapterToDelete, setChapterToDelete] = useState(null);   
 
     useEffect(() => {
         const fetchCourseDetails = async () => {
             const token = localStorage.getItem('token');
             try {
-                const response = await fetch(`http://localhost:3000/course/get-detail/${courseId}`, {
+                const response = await fetch(`https://learning-website-final.onrender.com/course/get-detail/${courseId}`, {
                     method: 'GET',
                     headers: {
                         'Auth-Token': token,
@@ -83,7 +87,7 @@ const ModifyCoursePage = () => {
                 const lessons = {};
                 for (const content of contentItems) {
                     const response = content.content_type === 'lesson'
-                        ? await fetch(`http://localhost:3000/lesson/get-lesson/${courseId}/${content.lesson_id}`, {
+                        ? await fetch(`https://learning-website-final.onrender.com/lesson/get-lesson/${courseId}/${content.lesson_id}`, {
                             method: 'GET',
                             headers: {
                                 'Auth-Token': token,
@@ -105,7 +109,11 @@ const ModifyCoursePage = () => {
     };
     
 
-
+    const openDeleteChapterModal = (chapterId) => {
+        setChapterToDelete(chapterId);
+        setIsDeleteChapterModalOpen(true);
+    };
+    
     const openAddLessonModal = (chapterOrder) => {
         setNewLessonData({ ...newLessonData, chapterOrder });
         setIsAddLessonModalOpen(true);
@@ -122,11 +130,36 @@ const ModifyCoursePage = () => {
         });
         setError(''); // Reset error message when closing the modal
     };
-
+    const deleteChapter = async () => {
+        const token = localStorage.getItem('token');
+        try {
+            const response = await fetch(`https://learning-website-final.onrender.com/course/delete-chapter/${courseId}/${chapterToDelete}`, {
+                method: 'DELETE',
+                headers: {
+                    'Auth-Token': token,
+                    'Content-Type': 'application/json',
+                },
+            });
+            const data = await response.json();
+            if (response.ok) {
+                // Update the state to remove the chapter from the UI
+                setCourse((prev) => ({
+                    ...prev,
+                    chapters: prev.chapters.filter((chapter) => chapter._id !== chapterToDelete),
+                }));
+                setIsDeleteChapterModalOpen(false); // Close modal after deletion
+            } else {
+                setError(data.message);
+            }
+        } catch (error) {
+            setError('Không thể xóa chương.');
+        }
+    };
+    
     const addChapter = async () => {
         const token = localStorage.getItem('token');
         try {
-            const response = await fetch(`http://localhost:3000/course/add-chapter/${courseId}`, {
+            const response = await fetch(`https://learning-website-final.onrender.com/course/add-chapter/${courseId}`, {
                 method: 'POST',
                 headers: {
                     'Auth-Token': token,
@@ -183,59 +216,78 @@ const ModifyCoursePage = () => {
             throw error;
         }
     };
-    
-    const addLesson = async () => {
-        const { title, description, type, chapterOrder } = newLessonData;
-        let url = newLessonData.url; // Default URL for video
-    
-        // If lesson type is "document" and a PDF file is selected, upload it
-        if (type === 'document' && pdfFile) {
-            try {
-                url = await uploadFileToCloudinary(pdfFile); // Upload PDF and get URL
-            } catch (error) {
-                return; // Return early if upload fails
-            }
-        }
-    
-        // Check if any required field is empty
-        if (!title || !description || !url) {
-            setError('Vui lòng điền đầy đủ thông tin.');
-            return;
-        }
-    
+
+    const handleDeleteConfirmation = () => {
+        deleteCourse();
+        setIsDeleteModalOpen(false); // Close the modal after deleting the course
+    };
+
+    const handleDeleteCancel = () => {
+        setIsDeleteModalOpen(false); // Close the modal if cancel is clicked
+    };
+
+    const deleteCourse = async () => {
         const token = localStorage.getItem('token');
         try {
-            const response = await fetch('http://localhost:3000/lesson/add-lesson', {
-                method: 'POST',
+            const response = await fetch(`https://learning-website-final.onrender.com/course/delete-course/${courseId}`, {
+                method: 'DELETE',
                 headers: {
                     'Auth-Token': token,
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({
-                    chapter_number: chapterOrder, // Use `chapterOrder` as `chapter_number` here
-                    lesson: {
-                        course: courseId,
-                        title,
-                        description,
-                        type,
-                        url
-                    }
-                }),
             });
             const data = await response.json();
             if (response.ok) {
-                // Show success message
-                setError('Thêm bài học thành công!');
-                setTimeout(() => {
-                    window.location.reload(); // Reload page after 0.5s
-                }, 500); 
+                navigate('/dashboard'); // Redirect to courses list page after successful deletion
             } else {
                 setError(data.message);
             }
         } catch (error) {
-            setError('Không thể thêm bài học.');
+            setError('Không thể xóa khóa học.');
         }
     };
+
+    const addLesson = async () => {
+        const { title, description, type, chapterOrder, url } = newLessonData;
+        const token = localStorage.getItem('token');
+
+        // Create form data to send the request
+        const formData = new FormData();
+        formData.append('chapter_number', chapterOrder); // Chapter number
+        formData.append('lesson[course]', courseId); // Course ID
+        formData.append('lesson[title]', title); // Lesson title
+        formData.append('lesson[description]', description); // Lesson description
+        formData.append('lesson[type]', type); // Lesson type
+        
+        // If it's a document lesson, add the file to formData
+        if (type === 'document' && pdfFile) {
+            formData.append('document', pdfFile); // Attach the selected file
+        } 
+        if (url) {
+            formData.append('lesson[url]', url);
+        }
+
+        try {
+            const response = await axios.post('https://learning-website-final.onrender.com/lesson/add-lesson', formData, {
+                headers: {
+                    'Auth-Token': token, // Auth token from localStorage
+                    'Content-Type': 'multipart/form-data', // Specify multipart
+                },
+            });
+
+            if (response.status === 201) {
+                setError('Thêm bài học thành công!');
+                setTimeout(() => {
+                    window.location.reload(); // Reload the page after success
+                }, 500);
+            } else {
+                setError(response.data.message || 'Không thể thêm bài học.');
+            }
+        } catch (error) {
+            setError(error.response?.data?.message || 'Lỗi khi thêm bài học.');
+        }
+    };
+    
 
     const getLessonIcon = (type) => {
         if (type === 'video') {
@@ -256,6 +308,15 @@ const ModifyCoursePage = () => {
                 <div className="course-header">
                     <h1>{course.title}</h1>
                     <p className="course-description">{course.description}</p>
+                    <button className="manage-course-student-button" onClick={() => navigate(`/manage-course-student/${courseId}`)}>
+                            Quản lý học viên
+                    </button>
+                    <button className="update-course-button" onClick={() => navigate(`/update-course/${courseId}`)}>
+                            Sửa thông tin khóa học
+                    </button>
+                    <button className="delete-course-button" onClick={() => setIsDeleteModalOpen(true)}>
+                            Xóa khóa học
+                    </button>
                     {!isAddingChapter ? (
                         <button className="add-chapter-button" onClick={() => setIsAddingChapter(true)}>
                             Thêm chương
@@ -295,6 +356,9 @@ const ModifyCoursePage = () => {
                         </button>
                         <button className="add-lesson-button" onClick={() => navigate(`/add-assignment/${courseId}/${chapter.order}`)}>
                             Thêm bài tập
+                        </button>
+                        <button className="delete-chapter-button" onClick={() => openDeleteChapterModal(chapter._id)}>
+                            Xóa chương
                         </button>
                     </div>
                 ))}
@@ -359,6 +423,33 @@ const ModifyCoursePage = () => {
                     {error && <div className="error-message">{error}</div>}
                     <button className="save-button" onClick={addLesson}>Thêm Bài Học</button>
                     <button onClick={closeAddLessonModal}>Hủy</button>
+                </Modal>
+            )}
+            {isDeleteModalOpen && (
+                <Modal
+                    isOpen={isDeleteModalOpen}
+                    onRequestClose={handleDeleteCancel}
+                    contentLabel="Xóa khóa học"
+                    className="delete-modal"
+                    overlayClassName="delete-modal-overlay"
+                >
+                    <h2>Bạn có chắc chắn muốn xóa khóa học này không?</h2>
+                    <button className="confirm-button" onClick={handleDeleteConfirmation}>Xác nhận</button>
+                    <button className="cancel-button" onClick={handleDeleteCancel}>Hủy</button>
+                </Modal>
+            )}
+
+            {isDeleteChapterModalOpen && (
+                <Modal
+                    isOpen={isDeleteChapterModalOpen}
+                    onRequestClose={() => setIsDeleteChapterModalOpen(false)}
+                    contentLabel="Xóa Chương"
+                    className="delete-modal"
+                    overlayClassName="delete-modal-overlay"
+                >
+                    <h2>Bạn có chắc chắn muốn xóa chương này không?</h2>
+                    <button className="confirm-button" onClick={deleteChapter}>Xác nhận</button>
+                    <button className="cancel-button" onClick={() => setIsDeleteChapterModalOpen(false)}>Hủy</button>
                 </Modal>
             )}
 

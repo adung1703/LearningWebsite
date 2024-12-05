@@ -2,9 +2,9 @@ import React, { useEffect, useState } from 'react';
 import { useParams, Link, useLocation } from 'react-router-dom';
 import axios from 'axios';
 import Navbar from '../../components/Navbar/Navbar';
-import QuizForm from '../../components/QuizForm/QuizForm';
+import TextEditor from './TextEditor.jsx';
 
-const QuizAssignment = () => {
+const FileUploadAssignment = () => {
     const { courseId, assignmentId } = useParams();
     const [assignment, setAssignment] = useState(null);
     const [assignmentState, setAssignmentState] = useState(null);
@@ -13,7 +13,7 @@ const QuizAssignment = () => {
     const location = useLocation();
     const dataState = location.state;
     const token = localStorage.getItem('token');
-    const { chapterIndex, itemIndex } = dataState;
+    const { chapterIndex, itemIndex } = dataState ? dataState : { chapterIndex: 0, itemIndex: 0 };
 
     const fetchAssignment = async (assignmentId) => { 
         try {
@@ -44,7 +44,7 @@ const QuizAssignment = () => {
             });
             if (response.data.success) {
                 const progress = response.data.data;
-                if (progress.progress[parseInt(dataState.chapterIndex)].assignments_completed.includes(assignmentId)) {
+                if (progress.progress[parseInt(chapterIndex)].assignments_completed.includes(assignmentId)) {
                     setAssignmentState('Đã hoàn thành');
                 } else {
                     setAssignmentState('Chưa hoàn thành');
@@ -138,11 +138,13 @@ const QuizAssignment = () => {
                     </a>
                 </div>
                 <div className="w-full justify-center" id='quizs'>
-                    <QuizForm
+                    <TextEditor
                         assignment={assignment}
-                        answers={answers}
-                        handleOptionChange={handleOptionChange}
-                        handleSubmit={handleSubmit}
+                        courseId={courseId}
+                        token={token}
+                        // answers={answers}
+                        // handleOptionChange={handleOptionChange}
+                        // handleSubmit={handleSubmit}
                     />
                 </div>
             </div>
@@ -150,4 +152,4 @@ const QuizAssignment = () => {
     );
 };
 
-export default QuizAssignment;
+export default FileUploadAssignment;

@@ -2,13 +2,28 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding-top: 100px; /* Adjust this value based on your navbar height */
+    padding-top: 0px; /* Adjust this value based on your navbar height */
     min-height: 100vh;
     background-color: #f9f9f9; /* Optional: background color for better contrast */
 }
 
 .title-section,
 .code-editor-section,
+.assignment_content {
+    background-color: #ffffff;
+    margin-top: 3%;
+    border-radius: 8px;
+    width: 1200px;
+    padding: 20px;
+}
+.assignment_content h1 {
+    font-size: large;
+    color:coral;
+}
+.assignment_content h3 {
+    margin: 10px 0;
+    font-size: medium;
+}
 .next-lesson-section,
 .result-section {
     text-align: center;
@@ -25,6 +40,7 @@
 .title-section p {
     margin: 10px 0;
 }
+
 
 .code-editor-section {
     margin-top: 20px;
@@ -83,7 +99,8 @@
     margin-bottom: 10px;
 }
 
-.result-section p {
+/* .result-section p {
     font-size: 16px;
     color: #333;
-}
+} */
+

@@ -15,6 +15,7 @@ const Dashboard = () => {
     const [selectedCourse, setSelectedCourse] = useState(null);
     const [qrCode, setQrCode] = useState('');
     const [courseProgress, setCourseProgress] = useState({});
+    const [userInfo, setUserInfo] = useState(null);
 
     const navigate = useNavigate();
 
@@ -24,9 +25,29 @@ const Dashboard = () => {
             navigate('/sign-in');
             return;
         }
+        const fetchUserInfo = async () => {
+            try {
+                const response = await fetch(`https://learning-website-final.onrender.com/user/user-info`, {
+                    method: 'GET',
+                    headers: {
+                        'Auth-Token': token,
+                    },
+                });
+
+                const data = await response.json();
+                if (data.success) {
+                    setUserInfo(data.user);
+                } else {
+                    console.error('Failed to fetch user info:', data.message);
+                }
+            } catch (error) {
+                console.error('Error fetching user info:', error);
+            }
+        };
+
         const fetchCourses = async () => {
             try {
-                const response = await fetch(`http://localhost:3000/course/all-courses`, {
+                const response = await fetch(`https://learning-website-final.onrender.com/course/all-courses`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -52,7 +73,7 @@ const Dashboard = () => {
         const fetchJoinedCourses = async () => {
             try {
                 const token = localStorage.getItem('token');
-                const response = await fetch(`http://localhost:3000/course/my-courses`, {
+                const response = await fetch(`https://learning-website-final.onrender.com/course/my-courses`, {
                     method: 'GET',
                     headers: {
                         'Content-Type': 'application/json',
@@ -77,16 +98,20 @@ const Dashboard = () => {
 
         fetchCourses();
         fetchJoinedCourses();
+        fetchUserInfo();
     }, [currentPage]);
 
     const formatPrice = (price) => {
+        if (price === undefined || price === null) {
+            return 'Chưa cập nhật'; // Or any fallback message you'd prefer
+        }
         return price === 0 ? 'Miễn phí' : price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
     };
 
     const handleSearch = async () => {
         try {
             const response = await fetch(
-                `http://localhost:3000/course/search-courses?keyword=${encodeURIComponent(searchKeyword)}`,
+                `https://learning-website-final.onrender.com/course/search-courses?keyword=${encodeURIComponent(searchKeyword)}`,
                 {
                     method: 'GET',
                     headers: {
@@ -132,7 +157,7 @@ const Dashboard = () => {
                 }
     
                 // API request to join the course
-                const response = await fetch('http://localhost:3000/user/join-course', {
+                const response = await fetch('https://learning-website-final.onrender.com/user/join-course', {
                     method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json',
@@ -149,6 +174,7 @@ const Dashboard = () => {
                     console.log(`Successfully joined course: ${course.title}`);
                     setModalVisible(false);  // Close the modal
                     alert(`Bạn đã tham gia khóa học: ${course.title}`);  // Display success message
+                    window.location.reload();
                 } else {
                     console.error(data.message || 'Error joining course');
                     alert('Đã xảy ra lỗi khi tham gia khóa học.');
@@ -177,7 +203,7 @@ const Dashboard = () => {
         const token = localStorage.getItem('token');
         
         try {
-            const courseResponse = await fetch(`http://localhost:3000/course/get-detail/${courseId}`, {
+            const courseResponse = await fetch(`https://learning-website-final.onrender.com/course/get-detail/${courseId}`, {
                 method: 'GET',
                 headers: {
                     'Auth-Token': `${token}`,
@@ -191,7 +217,7 @@ const Dashboard = () => {
                     return total + chapter.content.length;
                 }, 0);
     
-                const progressResponse = await fetch(`http://localhost:3000/progress/get-course-progress/${courseId}`, {
+                const progressResponse = await fetch(`https://learning-website-final.onrender.com/progress/get-course-progress/${courseId}`, {
                     method: 'GET',
                     headers: {
                         'Auth-Token': `${token}`,
@@ -208,7 +234,7 @@ const Dashboard = () => {
                     const progressPercentage = (totalCompleted / totalLessons) * 100;
     
                     // Ensure two decimal places
-                    const formattedProgress = progressPercentage.toFixed(2);
+                    const formattedProgress = progressPercentage.toFixed(0);
     
                     setCourseProgress((prevProgress) => ({
                         ...prevProgress,
@@ -315,27 +341,40 @@ const Dashboard = () => {
                 </div>
             </div>
 
-            {/* Course Modal */}
+
             {modalVisible && selectedCourse && (
-                <div className="course-modal">
-                    <div className="modal-content">
-                        <span className="close" onClick={handleCloseModal}>X</span>
+                <div className="modal-overlay">
+                    <div className="modal">
                         <h2>{selectedCourse.title}</h2>
                         <p>{selectedCourse.description}</p>
-                        <button onClick={() => handleJoinCourse(selectedCourse)}>
-                            {isCourseJoined(selectedCourse._id) ? 'Đã tham gia' : 'Tham gia khóa học'}
-                        </button>
+                        <div className="modal-instructor">
+                            <img src={selectedCourse.instructor.avatar} alt="Instructor Avatar" />
+                            <span>{selectedCourse.instructor.fullname}</span>
+                        </div>
+                        <p><strong>Giá:</strong> {formatPrice(selectedCourse.price)}</p>
+                        {isCourseJoined(selectedCourse._id) ? (
+                            <p>Bạn đã tham gia khóa học</p>
+                        ) : (
+                            <button onClick={() => handleJoinCourse(selectedCourse)} className="join-button">Tham gia</button>
+                        )}
+                        <button onClick={handleCloseModal} className="close-button">Đóng</button>
                     </div>
                 </div>
             )}
 
-            {/* Payment Modal */}
+            {/* Payment Modal for Paid Courses */}
             {paymentModalVisible && (
-                <div className="payment-modal">
-                    <div className="modal-content">
-                        <span className="close" onClick={handleClosePaymentModal}>X</span>
-                        <h2>Quét mã QR để thanh toán</h2>
-                        <div className="qr-code">{qrCode}</div>
+                <div className="modal-overlay">
+                    <div className="modal">
+                        <h2>Hãy chuyển khoản số tiền tương ứng</h2>
+                        <p>Admin sẽ duyệt đăng ký của bạn sớm nhất có thể</p>
+                        <div className="payment-qr-code">
+                            <img
+                                src={`https://api.qrserver.com/v1/create-qr-code/?data=${qrCode}&size=150x150`}
+                                alt="QR Code"
+                            />
+                        </div>
+                        <button onClick={handleClosePaymentModal} className="close-button">Đóng</button>
                     </div>
                 </div>
             )}
