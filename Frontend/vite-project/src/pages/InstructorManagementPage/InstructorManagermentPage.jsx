@@ -193,8 +193,9 @@ const InstructorPage = () => {
             })
             .then((response) => {
                 if (response.data && response.data.user) {
+                    console.log('User info:', response.data);
                     setUser(response.data.user);
-                    if (user.role !== 'admin') {
+                    if (response.data.user.role !== 'admin') {
                         alert('You are not an admin');
                         navigate('/dashboard');
                     }

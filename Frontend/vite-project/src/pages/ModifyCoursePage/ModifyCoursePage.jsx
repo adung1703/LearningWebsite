@@ -9,7 +9,7 @@ import axios from "axios";
 Modal.setAppElement('#root');
 
 const ModifyCoursePage = () => {
-    const { courseId } = useParams(); 
+    const { courseId } = useParams();
     const navigate = useNavigate();
     const [course, setCourse] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -32,7 +32,7 @@ const ModifyCoursePage = () => {
     const [pdfFile, setPdfFile] = useState(null);
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [isDeleteChapterModalOpen, setIsDeleteChapterModalOpen] = useState(false);
-    const [chapterToDelete, setChapterToDelete] = useState(null);   
+    const [chapterToDelete, setChapterToDelete] = useState(null);
 
     useEffect(() => {
         const fetchCourseDetails = async () => {
@@ -80,7 +80,7 @@ const ModifyCoursePage = () => {
             ...prev,
             [chapterId]: !prev[chapterId],
         }));
-    
+
         if (!chapterLessons[chapterId]) {
             try {
                 const token = localStorage.getItem('token');
@@ -95,7 +95,7 @@ const ModifyCoursePage = () => {
                             },
                         })
                         : { ok: true, json: async () => ({ data: { _id: content.assignment_id, title: 'Bài tập', type: 'assignment' } }) };
-    
+
                     const data = await response.json();
                     if (response.ok) {
                         lessons[content.content_type === 'lesson' ? data.data._id : content.assignment_id] = data.data;
@@ -107,13 +107,13 @@ const ModifyCoursePage = () => {
             }
         }
     };
-    
+
 
     const openDeleteChapterModal = (chapterId) => {
         setChapterToDelete(chapterId);
         setIsDeleteChapterModalOpen(true);
     };
-    
+
     const openAddLessonModal = (chapterOrder) => {
         setNewLessonData({ ...newLessonData, chapterOrder });
         setIsAddLessonModalOpen(true);
@@ -155,7 +155,7 @@ const ModifyCoursePage = () => {
             setError('Không thể xóa chương.');
         }
     };
-    
+
     const addChapter = async () => {
         const token = localStorage.getItem('token');
         try {
@@ -193,7 +193,7 @@ const ModifyCoursePage = () => {
     const handlePdfFileChange = (e) => {
         setPdfFile(e.target.files[0]); // Update state with selected file
     };
-    
+
     const uploadFileToCloudinary = async (file) => {
         const formData = new FormData();
         formData.append('file', file);
@@ -203,9 +203,9 @@ const ModifyCoursePage = () => {
                 method: 'POST',
                 body: formData,
             });
-            
+
             const data = await response.json();
-            
+
             if (data.secure_url) {
                 return data.secure_url; // Return the file URL from Cloudinary
             } else {
@@ -258,11 +258,11 @@ const ModifyCoursePage = () => {
         formData.append('lesson[title]', title); // Lesson title
         formData.append('lesson[description]', description); // Lesson description
         formData.append('lesson[type]', type); // Lesson type
-        
+
         // If it's a document lesson, add the file to formData
         if (type === 'document' && pdfFile) {
             formData.append('document', pdfFile); // Attach the selected file
-        } 
+        }
         if (url) {
             formData.append('lesson[url]', url);
         }
@@ -287,7 +287,7 @@ const ModifyCoursePage = () => {
             setError(error.response?.data?.message || 'Lỗi khi thêm bài học.');
         }
     };
-    
+
 
     const getLessonIcon = (type) => {
         if (type === 'video') {
@@ -297,7 +297,7 @@ const ModifyCoursePage = () => {
         }
         return <FaBook className="lesson-icon" />;
     };
-    
+
 
     if (loading) return <div>Đang tải...</div>;
 
@@ -305,63 +305,65 @@ const ModifyCoursePage = () => {
         <div className="CoursePage">
             <Navbar />
             <div className="course-content">
-                <div className="course-header">
-                    <h1>{course.title}</h1>
-                    <p className="course-description">{course.description}</p>
-                    <button className="manage-course-student-button" onClick={() => navigate(`/manage-course-student/${courseId}`)}>
+                <div className='content-container'>
+                    <div className="course-header">
+                        <h1>{course.title}</h1>
+                        <p className="course-description">{course.description}</p>
+                        <button className="manage-course-student-button" onClick={() => navigate(`/manage-course-student/${courseId}`)}>
                             Quản lý học viên
-                    </button>
-                    <button className="update-course-button" onClick={() => navigate(`/update-course/${courseId}`)}>
+                        </button>
+                        <button className="update-course-button" onClick={() => navigate(`/update-course/${courseId}`)}>
                             Sửa thông tin khóa học
-                    </button>
-                    <button className="delete-course-button" onClick={() => setIsDeleteModalOpen(true)}>
+                        </button>
+                        <button className="delete-course-button" onClick={() => setIsDeleteModalOpen(true)}>
                             Xóa khóa học
-                    </button>
-                    {!isAddingChapter ? (
-                        <button className="add-chapter-button" onClick={() => setIsAddingChapter(true)}>
-                            Thêm chương
                         </button>
-                    ) : (
-                        <div className="add-chapter-form">
-                            <input
-                                type="text"
-                                value={newChapterTitle}
-                                onChange={(e) => setNewChapterTitle(e.target.value)}
-                                placeholder="Nhập tên chương"
-                            />
-                            <button onClick={addChapter}>Xác nhận</button>
-                        </div>
-                    )}
-                </div>
-                {course.chapters.map((chapter) => (
-                    <div key={chapter.order} className="chapter-section" id={`chapter-${chapter.order}`}>
-                        <h2>{chapter.order}. {chapter.chapter_title} ({chapter.content.length} bài học)</h2>
-                        <button className="expand-chapter-button" onClick={() => toggleChapter(chapter.order, chapter.content)}>
-                            {expandedChapters[chapter.order] ? 'Thu gọn' : 'Mở rộng'}
-                        </button>
-
-                        {expandedChapters[chapter.order] && chapterLessons[chapter.order] && (
-                            <ul className="lessons-list">
-                            {Object.values(chapterLessons[chapter.order] || {}).map((content) => (
-                                <li key={content._id} className="lesson-item" >
-                                    {getLessonIcon(content.type)}
-                                    <span>{content.title || 'Untitled'}</span>
-                                </li>
-                            ))}
-                        </ul>
-                        
+                        {!isAddingChapter ? (
+                            <button className="add-chapter-button" onClick={() => setIsAddingChapter(true)}>
+                                Thêm chương
+                            </button>
+                        ) : (
+                            <div className="add-chapter-form">
+                                <input
+                                    type="text"
+                                    value={newChapterTitle}
+                                    onChange={(e) => setNewChapterTitle(e.target.value)}
+                                    placeholder="Nhập tên chương"
+                                />
+                                <button onClick={addChapter}>Xác nhận</button>
+                            </div>
                         )}
-                        <button className="add-lesson-button" onClick={() => openAddLessonModal(chapter.order)}>
-                            Thêm bài học
-                        </button>
-                        <button className="add-lesson-button" onClick={() => navigate(`/add-assignment/${courseId}/${chapter.order}`)}>
-                            Thêm bài tập
-                        </button>
-                        <button className="delete-chapter-button" onClick={() => openDeleteChapterModal(chapter._id)}>
-                            Xóa chương
-                        </button>
                     </div>
-                ))}
+                    {course.chapters.map((chapter) => (
+                        <div key={chapter.order} className="chapter-section" id={`chapter-${chapter.order}`}>
+                            <h2>{chapter.order}. {chapter.chapter_title} ({chapter.content.length} bài học)</h2>
+                            <button className="expand-chapter-button" onClick={() => toggleChapter(chapter.order, chapter.content)}>
+                                {expandedChapters[chapter.order] ? 'Thu gọn' : 'Mở rộng'}
+                            </button>
+
+                            {expandedChapters[chapter.order] && chapterLessons[chapter.order] && (
+                                <ul className="lessons-list">
+                                    {Object.values(chapterLessons[chapter.order] || {}).map((content) => (
+                                        <li key={content._id} className="lesson-item" >
+                                            {getLessonIcon(content.type)}
+                                            <span>{content.title || 'Untitled'}</span>
+                                        </li>
+                                    ))}
+                                </ul>
+
+                            )}
+                            <button className="add-lesson-button" onClick={() => openAddLessonModal(chapter.order)}>
+                                Thêm bài học
+                            </button>
+                            <button className="add-lesson-button" onClick={() => navigate(`/add-assignment/${courseId}/${chapter.order}`)}>
+                                Thêm bài tập
+                            </button>
+                            <button className="delete-chapter-button" onClick={() => openDeleteChapterModal(chapter._id)}>
+                                Xóa chương
+                            </button>
+                        </div>
+                    ))}
+                </div>
             </div>
 
 

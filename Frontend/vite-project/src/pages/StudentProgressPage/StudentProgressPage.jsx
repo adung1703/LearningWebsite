@@ -83,7 +83,8 @@ const StudentProgressPage = () => {
 
         // Check for null submission
         if (!assignment.submission || !assignment.submission._id) {
-            setErrorMessage('Sinh viên chưa nộp bài');
+            // setErrorMessage('Sinh viên chưa nộp bài');
+            alert('Sinh viên chưa nộp bài');
             return;
         }
 
