@@ -99,6 +99,12 @@ exports.joinCourse = async (req, res) => {
         if (!courseId || courseId === undefined || courseId === '' || courseId === null) {
             return res.status(400).json({ success: false, message: 'Thiếu thông tin khóa học' });
         }   
+        const course = await Courses.findById(courseId);
+
+        if (course.price > 0) {
+            return res.status(400).json({ success: false, message: 'Khóa học này cần phải thanh toán trước khi tham gia' });
+        }
+
         const user = await Users.findById(req.user.id);
         if (!user) {
             return res.status(404).json({ success: false, message: 'Không tìm thấy người dùng' });
@@ -108,8 +114,6 @@ exports.joinCourse = async (req, res) => {
         }
         user.coursesJoined.push(courseId);
         await user.save();
-
-        const course = await Courses.findById(courseId);
         
         const progress = new Progress({
             userId: req.user.id,

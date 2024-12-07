@@ -1,3 +1,5 @@
+const express = require('express');
+const router = express.Router();
 
 router.post('/create_payment_url', function (req, res, next) {
     var ipAddr = req.headers['x-forwarded-for'] ||
@@ -58,4 +60,5 @@ router.post('/create_payment_url', function (req, res, next) {
 
     res.redirect(vnpUrl)
 });
-// Vui lòng tham khảo thêm tại code demo
+// Vui lòng tham khảo thêm tại code demo\
+module.exports = router;
