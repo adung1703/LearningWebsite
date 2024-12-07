@@ -2,7 +2,7 @@ import React, { useEffect } from 'react'
 import './Homepage.css'
 import Navbar from '../../components/Navbar/Navbar.jsx'
 
-const Homepage = async () => {
+const Homepage = () => {
     return (
         <div className='Homepage'>
             <Navbar />
