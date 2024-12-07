@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './Dashboard.css';
 import Navbar from '../../components/Navbar/Navbar';
+import axios from 'axios'
 
 const Dashboard = () => {
     const [courses, setCourses] = useState([]);
@@ -144,10 +145,26 @@ const Dashboard = () => {
 
     const handleJoinCourse = async (course) => {  // <-- async here
         if (course.price > 0) {
+            console
+            try {
+                const res = await axios.post('https://learning-website-final.onrender.com/payment/create_payment_url',
+                    {courseId: course._id},
+                    {
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Auth-Token': localStorage.getItem('token'),
+                        },
+                    }
+                );
+                console.log(res);
+                window.location.href = res.data.vnpUrl; // Chuyển hướng tới URL thanh toán
+            } catch (error) {
+                console.error(error);
+            }
             // If the course has a price, show the payment modal with QR code
-            const randomQRCode = `QR_CODE_${Math.floor(Math.random() * 1000000)}`; // Randomize QR code
-            setQrCode(randomQRCode);
-            setPaymentModalVisible(true);
+            // const randomQRCode = `QR_CODE_${Math.floor(Math.random() * 1000000)}`; // Randomize QR code
+            // setQrCode(randomQRCode);
+            // setPaymentModalVisible(true);
         } else {
             try {
                 const token = localStorage.getItem('token'); // Retrieve the token from local storage
@@ -231,7 +248,7 @@ const Dashboard = () => {
                         return completed + progress.lessons_completed.length + progress.assignments_completed.length;
                     }, 0);
     
-                    const progressPercentage = (totalCompleted / totalLessons) * 100;
+                    const progressPercentage = totalLessons?((totalCompleted / totalLessons) * 100) : 0;
     
                     // Ensure two decimal places
                     const formattedProgress = progressPercentage.toFixed(0);

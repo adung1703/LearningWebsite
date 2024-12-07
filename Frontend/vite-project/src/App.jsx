@@ -20,6 +20,7 @@ import FileUploadAssignment from './pages/FileUploadAssignment/FileUploadAssignm
 import InstructorManagementPage from './pages/InstructorManagementPage/InstructorManagermentPage.jsx';
 import CourseManagementPage from './pages/CourseManagementPage/CourseManagementPage.jsx';
 import AllStudentPage from './pages/AllStudent/AllStudentPage.jsx';
+import PaymentResult from './pages/PaymentResult/PaymentResult.jsx';
 
 function App() {
   const [count, setCount] = useState(0);
@@ -31,6 +32,7 @@ function App() {
         <Route path="/sign-in" element={<SignIn />} />
         <Route path="/sign-up" element={<SignUp />} />
         <Route path="/dashboard" element={<Dashboard />} /> 
+        <Route path="/home" element={<Home />} />
         <Route path="/profile" element={<ProfilePage />} /> 
         <Route path="/course/:courseId" element={<CoursePage />} /> 
         <Route path="/lesson/:courseId/:lessonId" element={<LessonPage />} /> {/* Updated route */}
@@ -46,6 +48,7 @@ function App() {
         <Route path="/instructors" element={<InstructorManagementPage />} /> {/*Dành cho admin */} 
         <Route path="/students-management" element={<AllStudentPage />} /> {/*Dành cho admin */}
         <Route path="/courses-managerment" element={<CourseManagementPage/>}></Route> {/*Dành cho instructor */}
+        <Route path="/payment-result" element={<PaymentResult />} />
       </Routes>
     </Router>
   );
