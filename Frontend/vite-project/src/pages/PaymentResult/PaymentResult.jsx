@@ -29,10 +29,9 @@ const PaymentResult = () => {
     return (
         <div className="flex items-center justify-center min-h-screen bg-gray-100">
             <div className="bg-white shadow-md rounded-md p-6 max-w-md">
-                {result ? (
+                {/* {result ? (
                     <div>
                         <h2 className={`text-lg font-bold ${result.vnp_ResponseCode === '00' ? 'text-green-600' : 'text-red-600'}`}>
-                            {/* <h2 className={`text-lg font-bold text-green-600`}> */}
                             {result.vnp_ResponseCode === '00' ? 'Giao dịch thành công' : 'Giao dịch thất bại'}
                         </h2>
                         {result.vnp_Amount && (<p className="mt-2">  <span className="font-bold">Số tiền: {parseFloat(result.vnp_Amount) / 100} VNĐ</span> </p>)}
@@ -49,7 +48,7 @@ const PaymentResult = () => {
                 ) : (
                     <p>Đang xử lý...</p>
                 )
-                }
+                } */}
             </div>
         </div>
     );
