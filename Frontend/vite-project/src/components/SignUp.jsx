@@ -173,7 +173,7 @@ const styles = {
     flexDirection: 'column',
     justifyContent: 'center',
     alignItems: 'center',
-    height: '100vh',
+    height: '150vh',
     backgroundColor: '#f7f7f7',
     padding: '20px',
   },
