@@ -28,20 +28,20 @@ const ViewCourses = ({ instructor }) => {
                     'Auth-Token': token,
                 },
             })
-            .then((response) => {
-                if (response.data) {
-                    setCourses(response.data.courses);
-                } else {
-                    console.error('Invalid response structure:', response.data);
-                }
-            })
-            .catch((error) => {
-                console.error('Error fetching instructors:', error);
-            });
+                .then((response) => {
+                    if (response.data) {
+                        setCourses(response.data.courses);
+                    } else {
+                        console.error('Invalid response structure:', response.data);
+                    }
+                })
+                .catch((error) => {
+                    console.error('Error fetching instructors:', error);
+                });
         }
         fetchCourses();
     }
-    , [instructor]);
+        , [instructor]);
 
     return (
         <>
@@ -64,6 +64,9 @@ const ViewCourses = ({ instructor }) => {
                                     <th scope="col" className="w-2/3 px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                         Mô tả
                                     </th>
+                                    <th scope="col" className="w-2/3 px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Giá tiền
+                                    </th>
                                 </tr>
                             </thead>
                             <tbody className="bg-white divide-y divide-gray-200">
@@ -81,6 +84,11 @@ const ViewCourses = ({ instructor }) => {
                                         </td>
                                         <td className="px-6 py-4 whitespace-normal">
                                             <div className="text-sm text-gray-900 line-clamp-3">{course.description}</div>
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-normal text-right">
+                                            <div className="text-sm font-medium text-green-600">
+                                                {course.price ? `${new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(course.price)}` : 'Miễn phí'}
+                                            </div>
                                         </td>
                                     </tr>
                                 ))}
