@@ -37,6 +37,7 @@ const StudentProgressPage = () => {
                                 return {
                                     id: submission.assignmentId,
                                     title: assignmentData.data.title,
+                                    description: assignmentData.data.description && assignmentData.data.description || null,
                                     type: assignmentData.data.type,
                                     submission: submission.submission,
                                     status: submission.submission ? 'completed' : 'uncompleted',
@@ -80,35 +81,33 @@ const StudentProgressPage = () => {
         setErrorMessage(null); // Reset any previous error messages
         setModalErrorMessage(null); // Reset modal error messages
         setSelectedAssignment(assignment);
-
-        // Check for null submission
+    
         if (!assignment.submission || !assignment.submission._id) {
-            // setErrorMessage('Sinh viên chưa nộp bài');
             alert('Sinh viên chưa nộp bài');
             return;
         }
-
+    
         try {
             const { data } = await axios.get(
                 `https://learning-website-final.onrender.com/instructor/detail-submission/${assignment.submission._id}`,
                 { headers: { 'Auth-Token': token } }
             );
-
+    
             if (data.success) {
-                // Select the latest submission
                 const latestSubmission = data.submission.submission_detail[data.submission.submission_detail.length - 1];
-
+    
                 setSubmissionDetails({
-                    question: data.submission.assignmentId.questions[0].question_content,
+                    question: data.submission.assignmentId.questions && data.submission.assignmentId.questions[0]?.question_content || null,
                     answerUrl: latestSubmission.content[0], // Assuming the first content is the desired URL
                 });
-
+    
                 setShowModal(true);
             }
         } catch (error) {
             console.error('Error fetching submission details:', error);
         }
     };
+    
 
     const handleConfirm = async () => {
         // Validate grade
@@ -174,16 +173,25 @@ const StudentProgressPage = () => {
             {showModal && selectedAssignment && submissionDetails && (
                 <div className="modal-overlay">
                     <div className="modal">
-                        <h3>Grading: {selectedAssignment.title}</h3>
+                        <h3>Chấm điểm: {selectedAssignment.title}</h3>
                         <div className="modal-content">
-                            <label>Question</label>
-                            <textarea readOnly value={submissionDetails.question} />
-                            <label>Answer Preview</label>
+                            {selectedAssignment.description && (
+                                <>
+                                    <h4>{selectedAssignment.description}</h4>
+                                </>
+                            )}
+                            {submissionDetails.question && (
+                                <>
+                                    <label>Câu hỏi</label>
+                                    <textarea readOnly value={submissionDetails.question} />
+                                </>
+                            )}
+                            <label>Bài nộp</label>
                             <button
                                 className="view-url-button"
                                 onClick={() => window.open(submissionDetails.answerUrl, '_blank')}
                             >
-                                View Answer URL
+                                URL bài nộp
                             </button>
                             <label>Nhập điểm</label>
                             <input
