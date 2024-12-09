@@ -112,8 +112,10 @@ const AddAssignmentPage = () => {
                     null,
             language: assignmentType === 'code' ? selectedLanguage : null,
             version: assignmentType === 'code' ? selectedVersion : null,
-            pre_code: assignmentType === 'code' ? preCode.replace(/\n/g, '\\n') : null,
-            next_code: assignmentType === 'code' ? nextCode.replace(/\n/g, '\\n') : null,
+            // pre_code: assignmentType === 'code' ? preCode.replace(/\n/g, '\\n') : null,
+            // next_code: assignmentType === 'code' ? nextCode.replace(/\n/g, '\\n') : null,
+            pre_code: assignmentType === 'code' ? preCode : null,
+            next_code: assignmentType === 'code' ? nextCode : null,
             public_testcases: assignmentType === 'code' ? formattedPublicTestCases : null,
             private_testcases: assignmentType === 'code' ? formattedPrivateTestCases : null,
         };
