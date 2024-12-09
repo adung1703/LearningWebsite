@@ -118,6 +118,8 @@ const AddAssignmentPage = () => {
             private_testcases: assignmentType === 'code' ? formattedPrivateTestCases : null,
         };
 
+        console.log(answer);
+
         const body = {
             chapter_number: chapterId,
             assignment,
