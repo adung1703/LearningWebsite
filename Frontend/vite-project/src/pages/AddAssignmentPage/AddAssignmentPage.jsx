@@ -13,7 +13,7 @@ const AddAssignmentPage = () => {
     const [url, setUrl] = useState('');
     const [durationHours, setDurationHours] = useState(0);
     const [durationMinutes, setDurationMinutes] = useState(0);
-    const [assignmentType, setAssignmentType] = useState('trac_nghiem'); // Default type
+    const [assignmentType, setAssignmentType] = useState('quiz'); // Default type
     const [questions, setQuestions] = useState([{ content: '', choices: ['', '', '', ''], correct: 0 }]);
     const [fillAnswers, setFillAnswers] = useState([{ content: '', correctAnswer: '' }]);
     const [supportedLanguages, setSupportedLanguages] = useState([]);
@@ -87,16 +87,16 @@ const AddAssignmentPage = () => {
             course: courseId,
             title,
             description,
-            type: assignmentType === 'trac_nghiem' ? 'quiz' :
-                assignmentType === 'dien_dap_an' ? 'fill' :
-                    assignmentType === 'tu_luan' ? 'file-upload' : 'code',
+            type: assignmentType === 'quiz' ? 'quiz' :
+                assignmentType === 'fill' ? 'fill' :
+                    assignmentType === 'file_upload' ? 'file-upload' : 'code',
             url: url || null,
-            questions: assignmentType === 'trac_nghiem' ?
+            questions: assignmentType === 'quiz' ?
                 questions.map(q => ({
                     question_content: q.content,
                     options: q.choices
                 })) :
-                assignmentType === 'dien_dap_an' ?
+                assignmentType === 'fill' ?
                     fillAnswers.map(fa => ({
                         question_content: fa.content
                     })) :
@@ -107,7 +107,7 @@ const AddAssignmentPage = () => {
         const answer = {
             answer_content: assignmentType === 'quiz' ?
                 questions.map(q => q.choices[q.correct]) :
-                assignmentType === 'dien_dap_an' ?
+                assignmentType === 'fill' ?
                     fillAnswers.map(fa => fa.correctAnswer) :
                     null,
             language: assignmentType === 'code' ? selectedLanguage : null,
@@ -208,14 +208,14 @@ const AddAssignmentPage = () => {
                             value={assignmentType}
                             onChange={(e) => setAssignmentType(e.target.value)}
                         >
-                            <option value="trac_nghiem">Trắc nghiệm</option>
-                            <option value="dien_dap_an">Điền đáp án</option>
-                            <option value="tu_luan">Tự luận</option>
+                            <option value="quiz">Trắc nghiệm</option>
+                            <option value="fill">Điền đáp án</option>
+                            <option value="file_upload">Tự luận</option>
                             <option value="code">Code</option>
                         </select>
                     </label>
                     {/* Render input fields based on assignment type */}
-                    {assignmentType === 'trac_nghiem' && (
+                    {assignmentType === 'quiz' && (
                         <div className="questions-container">
                             {questions.map((question, qIndex) => (
                                 <div key={qIndex} className="question-item">
@@ -282,7 +282,7 @@ const AddAssignmentPage = () => {
                             </button>
                         </div>
                     )}
-                    {assignmentType === 'dien_dap_an' && (
+                    {assignmentType === 'fill' && (
                         <div className="fill-answer-container">
                             {fillAnswers.map((fillAnswer, fIndex) => (
                                 <div key={fIndex} className="fill-answer-item">
