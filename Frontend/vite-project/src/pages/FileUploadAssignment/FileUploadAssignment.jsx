@@ -49,6 +49,9 @@ const FileUploadAssignment = () => {
                 } else {
                     setAssignmentState('Chưa hoàn thành');
                 }
+            } else {
+                console.error('Error fetching course progress:', response.data.message);
+                setAssignmentState('Chưa hoàn thành');
             }
         } catch (error) {
             console.error('Error fetching course progress:', error);
