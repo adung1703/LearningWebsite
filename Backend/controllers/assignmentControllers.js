@@ -20,7 +20,7 @@ exports.getAllAssignments = async (req, res) => {
 
 exports.addAssignment = async (req, res) => {
     try {
-        let { chapter_number, assignment } = req.body;
+        let { chapter_number, assignment, answer } = req.body;
         const { role, id } = req.user;
         chapter_number = parseInt(chapter_number);
 
@@ -35,7 +35,7 @@ exports.addAssignment = async (req, res) => {
         }
 
         // Tạo câu trả lời trước
-        const newAnswer = await Answers.create({answer_content: assignment.answers});
+        const newAnswer = await Answers.create(answer);
         assignment.answers = newAnswer._id;
 
         // Tạo assignment
