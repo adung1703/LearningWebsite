@@ -11,20 +11,20 @@ const TextEditor = ({ assignment, courseId, token }) => {
             // Lưu nội dung dưới dạng HTML
             const file = new Blob([editorContent], { type: "text/html" });
             const formData = new FormData();
-    
+
             formData.append("assignmentId", assignment._id);
             formData.append("courseId", courseId);
             formData.append("file", new File([file], "submission.html"));
 
             console.log("Form data:", formData);
-    
+
             const response = await axios.post("https://learning-website-final.onrender.com/submission/add-submission", formData, {
                 headers: {
                     "Auth-Token": token,
                     "Content-Type": "multipart/form-data",
                 },
             });
-            
+
             alert("Nộp bài thành công!");
             console.log(response.data);
         } catch (error) {
@@ -32,7 +32,7 @@ const TextEditor = ({ assignment, courseId, token }) => {
             alert("Đã xảy ra lỗi khi nộp bài. Vui lòng thử lại.");
         }
     };
-    
+
 
     return (
         <div className="max-w-xl mx-auto bg-white p-8 rounded-md shadow-md min-h-3.5" style={{ border: '1px solid black' }} id="quiz-border">
@@ -43,12 +43,14 @@ const TextEditor = ({ assignment, courseId, token }) => {
                 {assignment.description}
             </h3>
             <form id="quizForm" className="space-y-4">
-                {assignment.questions.map((question, index) => (
-                    <div key={question._id} className="flex flex-col mb-4">
-                        <label htmlFor={`q${index}`} className="text-lg text-gray-800 mb-2">
-                            {index + 1}. {question.question_content}
-                        </label>
-                        {/* <div className="flex flex-col">
+                {assignment.question ?
+                    (assignment.questions.map(
+                        (question, index) => (
+                            <div key={question._id} className="flex flex-col mb-4">
+                                <label htmlFor={`q${index}`} className="text-lg text-gray-800 mb-2">
+                                    {index + 1}. {question.question_content}
+                                </label>
+                                {/* <div className="flex flex-col">
                             {question.options.map((option, optionIndex) => (
                                 <div key={optionIndex} className="flex items-center mb-2">
                                     <input
@@ -66,12 +68,16 @@ const TextEditor = ({ assignment, courseId, token }) => {
                                 </div>
                             ))}
                         </div> */}
-                    </div>
-                ))}
+                            </div>
+                        )
+                    )
+                    ) : (
+                        <div/>
+                    )}
                 <hr />
                 <h1 className="text-2xl font-bold mb-4">Nộp bài tập</h1>
                 <div>
-                    <ReactQuill value={editorContent} onChange={setEditorContent}/>
+                    <ReactQuill value={editorContent} onChange={setEditorContent} />
                 </div>
                 <button type="button" onClick={handleSubmit} className="bg-green-500 text-white px-4 py-2 rounded-md mt-8">
                     Submit
