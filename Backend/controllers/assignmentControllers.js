@@ -36,6 +36,7 @@ exports.addAssignment = async (req, res) => {
 
         // Tạo câu trả lời trước
         const newAnswer = await Answers.create(answer);
+        console.log(answer);
         assignment.answers = newAnswer._id;
 
         // Tạo assignment
