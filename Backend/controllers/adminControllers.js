@@ -4,7 +4,7 @@ const Courses = require('../models/courses');
 // manage Instructor functions
 exports.getAllInstructors = async (req, res) => {
     try {
-        const role = req.user.role;
+        const { role } = req.user;
         if (role !== 'admin') {
             return res.status(403).json({ success: false, message: 'Bạn không có quyền truy cập' });
         }
@@ -19,7 +19,7 @@ exports.getAllInstructors = async (req, res) => {
 
 exports.getInstructorCourses = async (req, res) => {
     try {
-        const role = req.user.role;
+        const { role } = req.user;
         if (role !== 'admin') {
             return res.status(403).json({ success: false, message: 'Bạn không có quyền truy cập' });
         }
@@ -37,7 +37,7 @@ exports.getInstructorCourses = async (req, res) => {
 
 exports.grantInstructorRole = async (req, res) => {
     try {
-        const role = req.user.role;
+        const { role } = req.user;
         if (role !== 'admin') {
             return res.status(403).json({ success: false, message: 'Bạn không có quyền truy cập' });
         }
@@ -59,10 +59,9 @@ exports.grantInstructorRole = async (req, res) => {
 };
 
 // manage User functions
-// lấy danh sách User, sắp xếp theo số lượng khóa học đã tham gia giảm dần (count coursesJoined giảm dần)
 exports.getAllUsers = async (req, res) => {
     try {
-        const role = req.user.role;
+        const { role } = req.user;
         if (role !== 'admin') {
             return res.status(403).json({ success: false, message: 'Bạn không có quyền truy cập' });
         }
@@ -76,7 +75,7 @@ exports.getAllUsers = async (req, res) => {
 
 exports.getCoursesOfStudent = async (req, res) => {
     try {
-        const role = req.user.role;
+        const { role } = req.user;
         if (role !== 'admin') {
             return res.status(403).json({ success: false, message: 'Bạn không có quyền truy cập' });
         }
