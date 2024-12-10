@@ -13,7 +13,8 @@ const upload = multer({ dest: 'uploads/' }); // Thư mục tạm thời để l�
 exports.registerUser = async (req, res) => {
     try {
         const { fullname, username, email, phoneNumber, password, role, avatar, create_at } = req.body;
-        const hashedPassword = await bcrypt.hash(password, 10);
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(password, salt);
 
         const user = new Users({
             fullname,
