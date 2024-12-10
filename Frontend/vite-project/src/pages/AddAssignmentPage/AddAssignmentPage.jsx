@@ -70,16 +70,16 @@ const AddAssignmentPage = () => {
         }
 
         const duration = durationHours * 60 * 60 + durationMinutes * 60;
-        
+
         // Append '\n' to each expected output for code type assignments
         const formattedPublicTestCases = publicTestCases.map(testCase => ({
             ...testCase,
-            expected_output: testCase.expected_output + '\n',
+            expected_output: testCase.expected_output,
         }));
 
         const formattedPrivateTestCases = privateTestCases.map(testCase => ({
             ...testCase,
-            expected_output: testCase.expected_output + '\n',
+            expected_output: testCase.expected_output,
         }));
 
         // Build the assignment data
@@ -343,15 +343,18 @@ const AddAssignmentPage = () => {
                             <label>
                                 Ngôn ngữ lập trình:
                                 <select
-                                    value={selectedLanguage}
+                                    value={supportedLanguages.findIndex(
+                                        (lang) => lang.language === selectedLanguage && lang.version === selectedVersion
+                                    )}
                                     onChange={(e) => {
-                                        setSelectedLanguage(e.target.value);
-                                        const selectedLang = supportedLanguages.find(lang => lang.language === e.target.value);
-                                        setSelectedVersion(selectedLang.version); // Update version based on selected language
+                                        const selectedIndex = parseInt(e.target.value, 10); // Lấy chỉ số từ value
+                                        const selectedLang = supportedLanguages[selectedIndex];
+                                        setSelectedLanguage(selectedLang.language); // Cập nhật ngôn ngữ đã chọn
+                                        setSelectedVersion(selectedLang.version);   // Cập nhật phiên bản tương ứng
                                     }}
                                 >
-                                    {supportedLanguages.map((lang) => (
-                                        <option key={lang.language} value={lang.language}>
+                                    {supportedLanguages.map((lang, index) => (
+                                        <option key={index} value={index}>
                                             {lang.language} ({lang.version})
                                         </option>
                                     ))}

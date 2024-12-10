@@ -18,6 +18,11 @@ const CodeSubmissionPage = () => {
     const [highestScore, setHighestScore] = useState(0);
 
     useEffect(() => {
+        const editorInstance = document.querySelector('.monaco-editor textarea');
+        if (editorInstance) {
+            editorInstance.setAttribute('spellcheck', 'false'); // Tắt kiểm tra chính tả
+        }
+        
         const fetchCourseDetails = async () => {
             // Simulating course data fetching
             const response = await axios.get(`https://learning-website-final.onrender.com/course/get-detail/${courseId}`,
