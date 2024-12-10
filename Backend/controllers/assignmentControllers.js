@@ -5,7 +5,8 @@ const Answers = require('../models/answers');
 
 exports.getAllAssignments = async (req, res) => {
     try {
-        if (req.user.role !== 'admin' && req.user.role !== 'instructor') {
+        const { role } = req.user;
+        if (role !== 'admin' && role !== 'instructor') {
             return res.status(403).json({ success: false, message: 'Bạn không có quyền xem tất cả bài tập' });
         }
         const assignments = await Assignments.find().sort({ create_at: 'desc' }).populate('course', 'course_title');
@@ -52,7 +53,7 @@ exports.addAssignment = async (req, res) => {
                 });
                 chapter = course.chapters[course.chapters.length - 1];
 
-                // Update Progresses
+                // Cập nhật tiến độ
                 const progresses = await course_progresses.find({ courseId: course._id });
                 progresses.forEach(progress => {
                     progress.progress.push({
@@ -91,7 +92,6 @@ exports.getAssignmentById = async (req, res) => {
 
         let assignmentQuery = Assignments.findById(id).populate('course', 'course_title');
 
-        // Nếu là admin hoặc instructor, populate thêm answers
         if (role === 'admin' || role === 'instructor') {
             assignmentQuery = assignmentQuery.populate('answers');
         }

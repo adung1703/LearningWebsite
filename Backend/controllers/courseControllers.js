@@ -2,12 +2,12 @@ const Courses = require('../models/courses');
 const Users = require('../models/users');
 const Assignments = require('../models/assignments');
 const CourseProgresses = require('../models/course_progresses');
-const { S3Client, PutObjectCommand, DeleteObjectCommand } = require('@aws-sdk/client-s3'); // Import PutObjectCommand và DeleteObjectCommand
-const { s3Client, region } = require('../config/s3Config'); // Import cấu hình S3 và region
+const { S3Client, PutObjectCommand, DeleteObjectCommand } = require('@aws-sdk/client-s3'); 
+const { s3Client, region } = require('../config/s3Config'); 
 const multer = require('multer');
 const fs = require('fs');
 const path = require('path');
-const upload = multer({ dest: 'uploads/' }); // Thư mục tạm thời để lưu file
+const upload = multer({ dest: 'uploads/' }); 
 
 exports.getCourses = async (req, res) => {
     try {
@@ -36,10 +36,10 @@ exports.getCourses = async (req, res) => {
 
 exports.getMyCourses = async (req, res) => {
     try {
-        const { id } = req.user; // Lấy danh sách khóa học đã tham gia của user
+        const { id } = req.user;
         const { coursesJoined } = await Users.findById(id).select('coursesJoined');
-        const courses = await Courses.find({ _id: { $in: coursesJoined } }).select('-chapters').populate('instructor', 'fullname avatar'); // Lấy thông tin khóa học trừ nội dung
-        const progresses = await CourseProgresses.find({ userId: id }); // Lấy thông tin tiến độ học tập của user
+        const courses = await Courses.find({ _id: { $in: coursesJoined } }).select('-chapters').populate('instructor', 'fullname avatar'); 
+        const progresses = await CourseProgresses.find({ userId: id }); 
 
         courses.forEach(course => {
             const progress = progresses.find(p => p.courseId.toString() === course._id.toString());
@@ -121,7 +121,7 @@ exports.getCourseDetail = async (req, res) => {
             path: 'chapters.content.assignment_id',
             model: 'Assignments',
             select: 'type',
-            options: { retainNullValues: true } // Giữ nguyên id nếu không tìm thấy trong reference
+            options: { retainNullValues: true } 
             });
 
         if (!course) {
@@ -142,7 +142,7 @@ exports.getCourseDetail = async (req, res) => {
 }
 
 exports.addCourse = [
-    upload.single('image'), // Middleware để xử lý file upload
+    upload.single('image'), 
     async (req, res) => {
         try {
             const { role } = req.user;
@@ -152,7 +152,6 @@ exports.addCourse = [
 
             const { title, description, price, instructor } = req.body;
 
-            // Thêm khóa học vào MongoDB trước để lấy courseId
             const course = new Courses({
                 title,
                 description,
@@ -162,18 +161,15 @@ exports.addCourse = [
 
             await course.save();
 
-            // Khai báo vùng và bucket
             const region = 'ap-southeast-1';
             const bucketName = 'learningwebsite-1';
             let imageUrl = `https://${bucketName}.s3.${region}.amazonaws.com/course-image/default-course-image.png`;
 
             if (req.file) {
-                // Tạo tên file theo template chung với courseId
                 const timestamp = Date.now();
                 const ext = path.extname(req.file.originalname);
                 const filename = `course-image/${course._id}-${timestamp}${ext}`;
 
-                // Tải file lên S3
                 const fileContent = fs.readFileSync(req.file.path);
                 const params = {
                     Bucket: bucketName,
@@ -186,11 +182,9 @@ exports.addCourse = [
                 await s3Client.send(command);
                 imageUrl = `https://${params.Bucket}.s3.${region}.amazonaws.com/${params.Key}`;
 
-                // Xóa file tạm sau khi upload
                 fs.unlinkSync(req.file.path);
             }
 
-            // Cập nhật URL của ảnh vào MongoDB
             course.image = imageUrl;
             await course.save();
 
@@ -204,8 +198,8 @@ exports.addCourse = [
     }
 ];
 
-exports.updateCourse = [ //Cập nhật những gì không đụng đến chapters
-    upload.single('image'), // Middleware để xử lý file upload
+exports.updateCourse = [ 
+    upload.single('image'), 
     async (req, res) => {
         try {
             const { courseId } = req.params;
@@ -222,7 +216,6 @@ exports.updateCourse = [ //Cập nhật những gì không đụng đến chapte
             const { title, description, price } = req.body;
 
             if (req.file) {
-                // Xóa ảnh cũ nếu có
                 if (course.image && course.image.includes('course-image/')) {
                     const oldKey = course.image.split('/').slice(-2).join('/');
                     const deleteParams = {
@@ -233,12 +226,10 @@ exports.updateCourse = [ //Cập nhật những gì không đụng đến chapte
                     await s3Client.send(deleteCommand);
                 }
 
-                // Tạo tên file theo template chung với courseId
                 const timestamp = Date.now();
                 const ext = path.extname(req.file.originalname);
                 const filename = `course-image/${course._id}-${timestamp}${ext}`;
 
-                // Tải file lên S3
                 const fileContent = fs.readFileSync(req.file.path);
                 const params = {
                     Bucket: 'learningwebsite-1',
@@ -251,7 +242,6 @@ exports.updateCourse = [ //Cập nhật những gì không đụng đến chapte
                 await s3Client.send(command);
                 course.image = `https://${params.Bucket}.s3.${region}.amazonaws.com/${params.Key}`;
 
-                // Xóa file tạm sau khi upload
                 fs.unlinkSync(req.file.path);
             }
 

@@ -4,8 +4,7 @@ const Submissions = require('../models/submissions');
 
 exports.getManagedCourses = async (req, res) => {
     try {
-        const role = req.user.role;
-        const { id } = req.user;
+        const { role, id } = req.user;
         if (role !== 'instructor') {
             return res.status(403).json({ success: false, message: 'Bạn không có quyền truy cập' });
         }
@@ -19,8 +18,7 @@ exports.getManagedCourses = async (req, res) => {
 
 exports.getStudentsOfCourse = async (req, res) => {
     try {
-        const role = req.user.role;
-        const { id } = req.user;
+        const { role, id } = req.user;
         if (role !== 'instructor') {
             return res.status(403).json({ success: false, message: 'Bạn không có quyền truy cập' });
         }

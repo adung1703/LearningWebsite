@@ -3,12 +3,12 @@ const Progress = require('../models/course_progresses');
 const Courses = require('../models/courses');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-const { PutObjectCommand, DeleteObjectCommand } = require('@aws-sdk/client-s3'); // Import PutObjectCommand và DeleteObjectCommand
+const { PutObjectCommand, DeleteObjectCommand } = require('@aws-sdk/client-s3'); 
 const { s3Client, region } = require('../config/s3Config');
 const multer = require('multer');
 const fs = require('fs');
 const path = require('path');
-const upload = multer({ dest: 'uploads/' }); // Thư mục tạm thời để lưu file
+const upload = multer({ dest: 'uploads/' }); 
 
 exports.registerUser = async (req, res) => {
     try {
@@ -138,11 +138,12 @@ exports.joinCourse = async (req, res) => {
 };
 
 exports.updateUserInfo = [
-    upload.single('avatar'), // Middleware để xử lý file upload
+    upload.single('avatar'), 
     async (req, res) => {
         try {
+            const { id } = req.user;
             const { fullname, username, email, phoneNumber, password } = req.body;
-            const user = await Users.findById(req.user.id);
+            const user = await Users.findById(id);
             if (!user) {
                 return res.status(404).json({ success: false, message: 'Không tìm thấy người dùng' });
             }
@@ -156,7 +157,6 @@ exports.updateUserInfo = [
             }
 
             if (req.file) {
-                // Xóa avatar cũ trên S3 nếu có và không phải là avatar mặc định
                 const defaultAvatarUrl = 'https://learningwebsite-1.s3.ap-southeast-1.amazonaws.com/user-avatar/default-user-avatar.png';
                 if (user.avatar && user.avatar !== defaultAvatarUrl && user.avatar.includes('amazonaws.com')) {
                     const oldKey = user.avatar.split('/').slice(-2).join('/');
@@ -168,12 +168,10 @@ exports.updateUserInfo = [
                     await s3Client.send(deleteCommand);
                 }
 
-                // Tạo tên file theo template chung
                 const timestamp = Date.now();
                 const ext = path.extname(req.file.originalname);
                 const filename = `user-avatar/${user._id}-${timestamp}${ext}`;
 
-                // Tải file lên S3
                 const fileContent = fs.readFileSync(req.file.path);
                 const params = {
                     Bucket: 'learningwebsite-1',
@@ -186,7 +184,6 @@ exports.updateUserInfo = [
                 await s3Client.send(command);
                 user.avatar = `https://${params.Bucket}.s3.${region}.amazonaws.com/${params.Key}`;
 
-                // Xóa file tạm sau khi upload
                 fs.unlinkSync(req.file.path);
             }
 

@@ -1,16 +1,17 @@
 const course_progresses = require('../models/course_progresses');
 const Courses = require('../models/courses');
 const Lessons = require('../models/lessons');
-const { S3Client, PutObjectCommand } = require('@aws-sdk/client-s3'); // Import PutObjectCommand
-const { s3Client, region } = require('../config/s3Config'); // Import cấu hình S3 và region
+const { S3Client, PutObjectCommand } = require('@aws-sdk/client-s3');
+const { s3Client, region } = require('../config/s3Config');
 const multer = require('multer');
 const fs = require('fs');
 const path = require('path');
-const upload = multer({ dest: 'uploads/' }); // Thư mục tạm thời để lưu file
+const upload = multer({ dest: 'uploads/' });
 
 exports.getAllLessons = async (req, res) => {
     try {
-        if (req.user.role !== 'admin' && req.user.role !== 'instructor') {
+        const { role } = req.user;
+        if (role !== 'admin' && role !== 'instructor') {
             return res.status(403).json({ success: false, message: 'Bạn không có quyền xem tất cả bài học' });
         }
         const lessons = await Lessons.find().select('-comments').sort({ create_at: 'desc' }).populate('course', 'course_title');
@@ -25,7 +26,7 @@ exports.getAllLessons = async (req, res) => {
 }
 
 exports.addLesson = [
-    upload.single('document'), // Middleware để xử lý file upload
+    upload.single('document'),
     async (req, res) => {
         try {
             let { chapter_number, lesson } = req.body;
@@ -42,16 +43,13 @@ exports.addLesson = [
                 return res.status(403).json({ success: false, message: 'Bạn không có quyền thêm bài học' });
             }
 
-            // Thêm bài học vào MongoDB trước
             const newLesson = await Lessons.create(lesson);
 
             if (lesson.type === 'document' && req.file) {
-                // Lấy _id của bài học để đặt tên file
                 const timestamp = Date.now();
                 const ext = path.extname(req.file.originalname);
                 const filename = `lesson-document/${newLesson._id}-${timestamp}${ext}`;
 
-                // Tải file lên S3
                 const fileContent = fs.readFileSync(req.file.path);
                 const params = {
                     Bucket: 'learningwebsite-1',
@@ -64,10 +62,8 @@ exports.addLesson = [
                 await s3Client.send(command);
                 newLesson.url = `https://${params.Bucket}.s3.${region}.amazonaws.com/${params.Key}`;
 
-                // Cập nhật URL của file vào MongoDB
                 await newLesson.save();
 
-                // Xóa file tạm sau khi upload
                 fs.unlinkSync(req.file.path);
             }
 
@@ -81,7 +77,6 @@ exports.addLesson = [
                     });
                     chapter = course.chapters[course.chapters.length - 1];
 
-                    //Update Progresses
                     const progresses = await course_progresses.find({ courseId: course._id });
                     progresses.forEach(progress => {
                         progress.progress.push({

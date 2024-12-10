@@ -3,8 +3,8 @@ const Assignments = require('../models/assignments');
 const Answers = require('../models/answers');
 const Courses = require('../models/courses');
 const CourseProgresses = require('../models/course_progresses.js');
-const { S3Client, PutObjectCommand, DeleteObjectCommand } = require('@aws-sdk/client-s3'); // Import PutObjectCommand và DeleteObjectCommand
-const { s3Client, region } = require('../config/s3Config'); // Import cấu hình S3 và region
+const { S3Client, PutObjectCommand, DeleteObjectCommand } = require('@aws-sdk/client-s3');
+const { s3Client, region } = require('../config/s3Config');
 const multer = require('multer');
 const fs = require('fs');
 const path = require('path');
@@ -140,13 +140,11 @@ exports.addSubmission = async (req, res) => {
     try {
         const { id } = req.user;
 
-        // Use multer to handle file and other fields
         upload.fields([{ name: 'file', maxCount: 1 }, { name: 'assignmentId', maxCount: 1 }])(req, res, async (err) => {
             if (err) {
                 return res.status(500).json({ success: false, message: err.message });
             }
 
-            // Now you can access assignmentId from req.body
             const { assignmentId, courseId } = req.body;
 
             const assignment = await Assignments.findById(assignmentId);
@@ -173,7 +171,7 @@ exports.addSubmission = async (req, res) => {
                     content => content.assignment_id && content.assignment_id.toString() === assignmentId
                 );
                 if (hasAssignment) {
-                    chapter_order = chapter.order; // Trả về thứ tự của chương
+                    chapter_order = chapter.order; 
                     break;
                 }
             }
@@ -231,7 +229,6 @@ exports.addSubmission = async (req, res) => {
                     resSubmission = newSubmission;
                 }
 
-                // Trên 7/10 điểm thì hoàn thành bài tập
                 if (dec_score >= 7) {
                     addChapterProgress(courseProgress, chapter_order);
                     updateProgress(courseProgress, chapter_order, assignmentId, courseOfAssignment);
@@ -329,7 +326,7 @@ exports.addSubmission = async (req, res) => {
 
                 try {
                     await s3Client.send(new PutObjectCommand(params));
-                    fs.unlinkSync(file.path); // Remove the file from the local uploads folder
+                    fs.unlinkSync(file.path); 
 
                     const fileUrl = `https://${bucketName}.s3.${region}.amazonaws.com/${folderName}/${file.originalname}`;
 
