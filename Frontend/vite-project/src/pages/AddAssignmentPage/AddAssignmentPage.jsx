@@ -24,7 +24,6 @@ const AddAssignmentPage = () => {
     const [publicTestCases, setPublicTestCases] = useState([{ input: '', expected_output: '' }]);
     const [privateTestCases, setPrivateTestCases] = useState([{ input: '', expected_output: '' }]);
 
-
     useEffect(() => {
         const fetchSupportedLanguages = async () => {
             try {
@@ -55,6 +54,12 @@ const AddAssignmentPage = () => {
         const updatedTestCases = testCases.filter((_, i) => i !== index);
         setTestCases(updatedTestCases);
     };
+
+    const mapOptionToLetter = (optionIndex) => {
+        const letters = ['a', 'b', 'c', 'd'];
+        return letters[optionIndex];
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
 
@@ -106,7 +111,7 @@ const AddAssignmentPage = () => {
 
         const answer = {
             answer_content: assignmentType === 'quiz' ?
-                questions.map(q => q.choices[q.correct]) :
+                questions.map(q => mapOptionToLetter(q.correct)) :
                 assignmentType === 'fill' ?
                     fillAnswers.map(fa => fa.correctAnswer) :
                     null,
